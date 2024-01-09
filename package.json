@@ -1,0 +1,54 @@
+{
+  "name": "docease-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.ts",
+  "scripts": {
+    "start": "ts-node-dev src/app.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Doc-Ease/docease-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Doc-Ease/docease-backend/issues"
+  },
+  "homepage": "https://github.com/Doc-Ease/docease-backend#readme",
+  "dependencies": {
+    "@prisma/client": "5.3.1",
+    "@sendgrid/mail": "^8.1.0",
+    "@types/bcryptjs": "^2.4.4",
+    "@types/cors": "^2.8.14",
+    "@types/express": "^4.17.18",
+    "@types/form-data": "^2.5.0",
+    "@types/image-size": "^0.8.0",
+    "@types/jsonwebtoken": "^9.0.3",
+    "@types/mime-types": "^2.1.2",
+    "@types/morgan": "^1.9.6",
+    "@types/multer": "^1.4.8",
+    "@types/node": "^20.7.2",
+    "@types/pug": "^2.0.10",
+    "@types/resemblejs": "^4.1.1",
+    "axios": "^1.5.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "firebase": "^9.23.0",
+    "form-data": "^4.0.0",
+    "image-size": "^1.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "mime-types": "^2.1.35",
+    "morgan": "^1.10.0",
+    "multer": "1.4.5-lts.1",
+    "prisma": "5.3.1",
+    "pug": "^3.0.2",
+    "resemblejs": "^5.0.0",
+    "socket.io": "^4.7.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.9.5"
+  }
+}

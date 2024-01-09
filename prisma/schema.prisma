@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DOCEASE_DATABASE_URL")
+}
+
+enum Role {
+  patient
+  doctor
+  admin
+}
+
+enum Gender {
+  male
+  female
+}
+
+model User {
+  userId                 String    @id @default(uuid())
+  firstName              String    @db.Text
+  lastName               String    @db.Text
+  email                  String    @unique @db.Text
+  phoneNumber            String
+  gender                 Gender
+  role                   Role      @default(patient)
+  password               String    @db.Text
+  imageUrl               String?   @db.Text
+  imagePath              String?   @db.Text
+  passwordResetToken     String?   @db.Text
+  passwordResetExpiresAt DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime? @updatedAt
+
+  @@index([userId])
+  @@index([email])
+  @@index([passwordResetToken])
+  @@map("_users")
+}
+
+// PRISMA COMMNANDS 
+
+// INITIALIZE PRISMA
+// npx prisma init --datasource-provider postgresql
+
+// APPLY CHANGES TO ACTUAL DATABASE 
+// npx prisma migrate dev --name test
+
+// GENERATE THE CLIENT TO INTERACT WITH THE DATABASE
+// npx prisma generate
+
+// TO EXPLORE AND MANUPLATE DATA USE PRISMA STUDIO
+// npx prisma studio
