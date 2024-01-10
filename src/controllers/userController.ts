@@ -54,6 +54,26 @@ const validateGender = (gender: string): boolean => {
   return false;
 };
 
+export const setUserRole = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const PATIENT_SIGNUP_URL = "api/v1/users/doctors/signup";
+    const DOCTOR_SIGNUP_URL = "api/v1/users/patients/signup";
+    const DOCTOR_ADMIN_URL = "api/v1/users/admins/signup";
+
+    if (req.url === PATIENT_SIGNUP_URL) {
+      res.locals.role = "patient";
+    } else if (req.url === DOCTOR_SIGNUP_URL) {
+      res.locals.role = "doctor";
+    } else if (req.url === DOCTOR_ADMIN_URL) {
+      res.locals.role = "admin";
+    } else {
+      return next(new AppError("Invalid signup url", 400));
+    }
+
+    next();
+  }
+);
+
 export const signUp = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const firstName = req.body.firstName as string;
@@ -62,6 +82,7 @@ export const signUp = asyncHandler(
     const email = req.body.email as string;
     const gender = req.body.gender as string;
     const password = req.body.password as string;
+    const role = res.locals.role as string;
 
     if (!email || !phone || !firstName || !lastName || !password || !gender) {
       return next(new AppError("Please fill out all fields", 400));
@@ -72,6 +93,9 @@ export const signUp = asyncHandler(
     if (!validateGender(gender)) {
       return next(new AppError("Please provide a valid gender", 400));
     }
+    if (!role) {
+      return next(new AppError("Please ensure user role is set!", 400));
+    }
     const user = await User.findFirst({
       where: { email: { equals: email } },
     });
@@ -79,6 +103,7 @@ export const signUp = asyncHandler(
 
     const salt = await genSalt(10);
     req.body.password = await hash(req.body.password, salt);
+    req.body.role = role;
 
     const newUser = await User.create({
       data: req.body,

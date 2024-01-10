@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  setUserRole,
   signUp,
   signIn,
   resetPassword,
@@ -14,7 +15,9 @@ import { uploadFile } from "../utils/upload";
 
 const router = express.Router();
 
-router.post("/signup", signUp);
+router.post("/patients/signup", setUserRole, signUp);
+router.post("/doctors/signup", setUserRole, signUp);
+router.post("/admins/signup", setUserRole, signUp);
 router.post("/signin", signIn);
 router.post("/forgot-password", forgotPassword);
 router.patch("/reset-password/:token", resetPassword);
