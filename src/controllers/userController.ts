@@ -33,7 +33,9 @@ const authenticate = async (
   user.imagePath = undefined;
   user.password = undefined;
   user.passwordResetToken = undefined;
-  user.passwordResetExpires = undefined;
+  user.passwordResetExpiresAt = undefined;
+  user.createdAt = undefined;
+  user.updatedAt = undefined;
 
   res.status(statusCode).json({
     status: "success",
