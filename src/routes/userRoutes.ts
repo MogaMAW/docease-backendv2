@@ -23,7 +23,7 @@ router.post("/forgot-password", forgotPassword);
 router.patch("/reset-password/:token", resetPassword);
 router.patch("/edit-user-details/:userId", protect, editUserDetails);
 router.patch(
-  "/upload-user-image/:userId",
+  "/update-user-image/:userId",
   uploadFile,
   protect,
   updateUserImage
