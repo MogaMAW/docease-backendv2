@@ -170,8 +170,8 @@ export const forgotPassword = asyncHandler(
       },
     });
 
-    const resetURL = `${req.protocol}://docease-v2.netlify.app/reset-password/${resetToken}`;
-    // const resetURL = `${req.protocol}://localhost:5173/reset-password/${resetToken}`;
+    const resetURL = `${req.protocol}://docease-v2.netlify.app/auth/reset-password/${resetToken}`;
+    // const resetURL = `${req.protocol}://localhost:5173/auth/reset-password/${resetToken}`;
     console.log("resetURL", resetURL);
     const subject = "Reset Password";
     await new Email(email, subject).sendPasswordReset(resetURL, user.firstName);
