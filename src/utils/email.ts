@@ -9,7 +9,7 @@ export class Email {
   constructor(recipients: string, subject: string) {
     SGmail.setApiKey(process.env.SENDGRID_API_KEY!);
 
-    this.from = process.env.SENDER_EMAIL!;
+    this.from = "docease.app@gmail.com";
     this.recipients = recipients;
     this.subject = subject;
   }
