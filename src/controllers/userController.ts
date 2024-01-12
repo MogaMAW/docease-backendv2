@@ -56,9 +56,9 @@ const validateGender = (gender: string): boolean => {
 
 export const setUserRole = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const PATIENT_SIGNUP_URL = "api/v1/users/doctors/signup";
-    const DOCTOR_SIGNUP_URL = "api/v1/users/patients/signup";
-    const DOCTOR_ADMIN_URL = "api/v1/users/admins/signup";
+    const PATIENT_SIGNUP_URL = "/patients/signup";
+    const DOCTOR_SIGNUP_URL = "/doctors/signup";
+    const DOCTOR_ADMIN_URL = "/admins/signup";
 
     if (req.url === PATIENT_SIGNUP_URL) {
       res.locals.role = "patient";
