@@ -6,7 +6,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { errorController } from "./controllers/errorController";
 import { userRoutes } from "./routes/userRoutes";
-
+import { appointmentRoutes } from "./routes/appointmentRoutes";
 
 dotenv.config();
 
@@ -34,6 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(logger("dev"));
 
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/appointments", appointmentRoutes);
 
 app.use(errorController);
 

@@ -1,0 +1,263 @@
+import { Request, Response, NextFunction } from "express";
+import { AppError } from "../utils/error";
+import { asyncHandler } from "../utils/asyncHandler";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+const Appointment = prisma.appointment;
+const AppointmentStatus = prisma.appointmentStatus;
+
+const isApprovedAppointment = (appointmentStatusArray: any): boolean => {
+  let isApproved = false;
+
+  appointmentStatusArray.map((status: string) => {
+    if (status === "approved") isApproved = true;
+  });
+  return isApproved;
+};
+
+export const postAppointment = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const patientId = req.body.patientId as string;
+    const doctorId = req.body.doctorId as string;
+    const subject = req.body.subject as string;
+    const startsAt = req.body.startsAt as string;
+    const endsAt = req.body.patientId as string;
+
+    if (!patientId || !doctorId || !subject || !startsAt || !endsAt) {
+      return next(new AppError("Please all mandatory fields", 400));
+    }
+
+    const newAppointment = await Appointment.create({
+      data: req.body,
+      select: {
+        appointmentId: true,
+        patientId: true,
+        doctorId: true,
+        subject: true,
+        appointmentStatus: true,
+        startsAt: true,
+        endsAt: true,
+        doctorsComment: true,
+        patientsComment: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    const appointmentStatus = await AppointmentStatus.create({
+      data: { appointmentId: newAppointment.appointmentId, status: "pending" },
+      select: {
+        appointmentStatusId: true,
+        appointmentId: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    newAppointment.appointmentStatus.push(appointmentStatus);
+
+    res.status(201).json({
+      status: "success",
+      message: "Appointment created",
+      data: { appointment: newAppointment },
+    });
+  }
+);
+
+export const updateAppointment = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const appointmentId = req.params.appointmentId as string;
+    const patientId = req.body.patientId as string;
+    const doctorId = req.body.doctorId as string;
+    const subject = req.body.subject as string;
+    const startsAt = req.body.startsAt as string;
+    const endsAt = req.body.patientId as string;
+
+    if (!patientId || !doctorId || !subject || !startsAt || !endsAt) {
+      return next(new AppError("Please all mandatory fields", 400));
+    }
+
+    const savedAppointment = await Appointment.findFirst({
+      where: { appointmentId: { equals: appointmentId } },
+      include: { appointmentStatus: true },
+    });
+
+    if (!savedAppointment) {
+      return next(
+        new AppError("We couldn't find appointment of provided Id", 404)
+      );
+    }
+
+    if (isApprovedAppointment(savedAppointment.appointmentStatus)) {
+      return next(
+        new AppError("Can't update to already approved appointment", 400)
+      );
+    }
+
+    const updatedAppointment = await Appointment.update({
+      where: { appointmentId: appointmentId },
+      data: req.body,
+      select: {
+        appointmentId: true,
+        patientId: true,
+        doctorId: true,
+        subject: true,
+        appointmentStatus: true,
+        startsAt: true,
+        endsAt: true,
+        doctorsComment: true,
+        patientsComment: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    const appointmentStatus = await AppointmentStatus.create({
+      data: {
+        appointmentId: updatedAppointment.appointmentId,
+        status: "edited",
+      },
+      select: {
+        appointmentStatusId: true,
+        appointmentId: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    updatedAppointment.appointmentStatus.push(appointmentStatus);
+
+    res.status(200).json({
+      status: "success",
+      message: "Appointment updated",
+      data: { appointment: updatedAppointment },
+    });
+  }
+);
+
+export const getAppointment = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const appointmentId = req.params.appointmentId as string;
+
+    const appointment = await Appointment.findFirst({
+      where: { appointmentId: { equals: appointmentId } },
+      include: { appointmentStatus: true },
+    });
+
+    if (!appointment) {
+      return next(
+        new AppError("We couldn't find appointment of provided Id", 404)
+      );
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Appointment fetched",
+      data: { appointment: appointment },
+    });
+  }
+);
+
+export const getAppointmentsByDoctor = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const doctorId = req.query.doctorId as string;
+
+    const appointments = await Appointment.findMany({
+      where: { doctorId: { equals: doctorId } },
+      include: { appointmentStatus: true },
+    });
+
+    if (!appointments) {
+      return next(
+        new AppError("We couldn't find appointment of provided Id", 404)
+      );
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Appointments fetched",
+      data: { appointments: appointments },
+    });
+  }
+);
+
+export const getAppointmentsByPatient = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const patientId = req.query.patientId as string;
+
+    const appointments = await Appointment.findMany({
+      where: { patientId: { equals: patientId } },
+      include: { appointmentStatus: true },
+    });
+
+    if (!appointments) {
+      return next(
+        new AppError("We couldn't find appointment of provided Id", 404)
+      );
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Appointments fetched",
+      data: { appointments: appointments },
+    });
+  }
+);
+
+export const getAllAppointments = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const patientId = req.query.patientId as string;
+
+    const appointments = await Appointment.findMany({
+      where: { patientId: { equals: patientId } },
+      include: { appointmentStatus: true },
+    });
+
+    if (!appointments) {
+      return next(
+        new AppError("We couldn't find appointment of provided Id", 404)
+      );
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Appointments fetched",
+      data: { appointments: appointments },
+    });
+  }
+);
+
+export const deleteAppointment = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const appointmentId = req.params.appointmentId as string;
+
+    const appointment = await Appointment.findFirst({
+      where: { appointmentId: { equals: appointmentId } },
+      include: { appointmentStatus: true },
+    });
+
+    if (!appointment) {
+      return next(
+        new AppError("We couldn't find appointment of provided Id", 404)
+      );
+    }
+
+    if (isApprovedAppointment(appointment.appointmentStatus)) {
+      return next(
+        new AppError("Can't delete to already approved appointment", 400)
+      );
+    }
+
+    await Appointment.delete({
+      where: { appointmentId: appointmentId },
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Appointments deleted",
+    });
+  }
+);

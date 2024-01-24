@@ -19,25 +19,71 @@ enum Gender {
 }
 
 model User {
-  userId                 String    @id @default(uuid())
-  firstName              String    @db.Text
-  lastName               String    @db.Text
-  email                  String    @unique @db.Text
+  userId                 String        @id @default(uuid())
+  firstName              String        @db.Text
+  lastName               String        @db.Text
+  email                  String        @unique @db.Text
   phoneNumber            String
   gender                 Gender
-  role                   Role      @default(patient)
-  password               String    @db.Text
-  imageUrl               String?   @db.Text
-  imagePath              String?   @db.Text
-  passwordResetToken     String?   @db.Text
+  role                   Role          @default(patient)
+  password               String        @db.Text
+  imageUrl               String?       @db.Text
+  imagePath              String?       @db.Text
+  passwordResetToken     String?       @db.Text
   passwordResetExpiresAt DateTime?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime? @updatedAt
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime?     @updatedAt
+  patient                Appointment[] @relation("patient")
+  doctor                 Appointment[] @relation("doctor")
 
   @@index([userId])
   @@index([email])
   @@index([passwordResetToken])
   @@map("_users")
+}
+
+model Appointment {
+  appointmentId     String              @id @default(uuid())
+  patient           User                @relation("patient", fields: [patientId], references: [userId])
+  patientId         String
+  doctor            User                @relation("doctor", fields: [doctorId], references: [userId])
+  doctorId          String
+  subject           String              @db.Text
+  startsAt          DateTime
+  endsAt            DateTime
+  doctorsComment    String?
+  patientsComment   String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime?           @updatedAt
+  appointmentStatus AppointmentStatus[]
+
+  @@index([appointmentId])
+  @@index([patientId])
+  @@index([doctorId])
+  @@map("_appointments")
+}
+
+enum AppointmentStatusEnum {
+  pending
+  rescheduled
+  edited
+  approved
+  cancelled
+  done
+}
+
+model AppointmentStatus {
+  appointmentStatusId String                @id @default(uuid())
+  appointment         Appointment           @relation(fields: [appointmentId], references: [appointmentId])
+  appointmentId       String
+  status              AppointmentStatusEnum @default(pending)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime?             @updatedAt
+
+  @@index([appointmentStatusId])
+  @@index([appointmentId])
+  @@index([status])
+  @@map("_appointment_statuses")
 }
 
 // PRISMA COMMNANDS 
