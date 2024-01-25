@@ -10,6 +10,7 @@ import {
   updateUserImage,
   protect,
   getUser,
+  getUserByRole,
 } from "../controllers/userController";
 import { uploadFile } from "../utils/upload";
 
@@ -29,6 +30,7 @@ router.patch(
   updateUserImage
 );
 router.patch("/change-password/:userId", protect, changePassword);
-router.get("/get-user/:userId", getUser);
+router.get("/get-user/:userId", protect, getUser);
+router.get("/get-user-by-role", protect, getUserByRole);
 
 export { router as userRoutes };

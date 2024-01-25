@@ -35,11 +35,27 @@ model User {
   updatedAt              DateTime?     @updatedAt
   patient                Appointment[] @relation("patient")
   doctor                 Appointment[] @relation("doctor")
+  accessTokens           AccessToken[]
 
   @@index([userId])
   @@index([email])
+  @@index([role])
   @@index([passwordResetToken])
   @@map("_users")
+}
+
+model AccessToken {
+  tokenId   String    @id @default(uuid())
+  User      User      @relation(fields: [userId], references: [userId])
+  userId    String
+  token     String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([tokenId])
+  @@index([userId])
+  @@index([token])
+  @@map("_access_tokens")
 }
 
 model Appointment {

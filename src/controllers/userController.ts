@@ -9,14 +9,25 @@ import { Upload } from "../utils/upload";
 import { Email } from "../utils/email";
 import mime from "mime-types";
 import { Gender } from "../types/gender";
+import { Role } from "../types/role";
 
 const prisma = new PrismaClient();
 const User = prisma.user;
+const AccessToken = prisma.accessToken;
 
 const signAccessToken = (userId: number) => {
   const jwtSecret = process.env.JWT_SECRET!;
   return jwt.sign({ userId: userId }, jwtSecret, {
     expiresIn: process.env.JWT_EXPIRES_IN_HOURS,
+  });
+};
+
+const saveAccessToken = async (userId: string, accessToken: string) => {
+  await AccessToken.create({
+    data: {
+      userId: userId,
+      token: accessToken,
+    },
   });
 };
 
@@ -36,6 +47,8 @@ const authenticate = async (
   user.passwordResetExpiresAt = undefined;
   user.createdAt = undefined;
   user.updatedAt = undefined;
+
+  await saveAccessToken(user.userId, accessToken);
 
   res.status(statusCode).json({
     status: "success",
@@ -452,6 +465,44 @@ export const getUser = asyncHandler(
       status: "success",
       message: "User fetched successfully",
       data: { user: user },
+    });
+  }
+);
+
+export const getUserByRole = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const role = req.query.role as Role;
+
+    if (!role) {
+      return next(new AppError("Please provide search query", 400));
+    }
+
+    const users = await User.findMany({
+      where: { role: { equals: role } },
+      select: {
+        userId: true,
+        firstName: true,
+        lastName: true,
+        gender: true,
+        role: true,
+        imageUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        accessTokens: {
+          select: { createdAt: true },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+      },
+    });
+    if (!users) {
+      return next(new AppError("we couldn't find user with userId", 404));
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Users fetched",
+      data: { doctors: users },
     });
   }
 );
