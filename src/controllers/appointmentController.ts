@@ -75,6 +75,10 @@ export const updateAppointment = asyncHandler(
     const startsAt = req.body.startsAt as string;
     const endsAt = req.body.patientId as string;
 
+    if (!appointmentId) {
+      return next(new AppError("Please provide appointmentId", 400));
+    }
+
     if (!patientId || !doctorId || !subject || !startsAt || !endsAt) {
       return next(new AppError("Please all mandatory fields", 400));
     }

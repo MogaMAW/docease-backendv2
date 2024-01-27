@@ -13,7 +13,7 @@ import {
 const router = express.Router();
 
 router.post("/post", protect, postAppointment);
-router.patch("/update", protect, updateAppointment);
+router.patch("/update/:appointmentId", protect, updateAppointment);
 router.get("/get/:appointmentId", protect, getAppointment);
 router.get("/get-all-appointments", protect, getAllAppointments);
 router.get("/get-by-doctor", protect, getAppointmentsByDoctor);
