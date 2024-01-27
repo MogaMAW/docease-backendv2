@@ -323,6 +323,10 @@ export const deleteAppointment = asyncHandler(
       );
     }
 
+    await AppointmentStatus.deleteMany({
+      where: { appointmentId: appointmentId },
+    });
+
     await Appointment.delete({
       where: { appointmentId: appointmentId },
     });
