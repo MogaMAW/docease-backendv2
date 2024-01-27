@@ -35,7 +35,7 @@ export const postAppointment = asyncHandler(
         patientId: true,
         doctorId: true,
         subject: true,
-        appointmentStatus: true,
+        statuses: true,
         startsAt: true,
         endsAt: true,
         doctorsComment: true,
@@ -56,7 +56,7 @@ export const postAppointment = asyncHandler(
       },
     });
 
-    newAppointment.appointmentStatus.push(appointmentStatus);
+    newAppointment.statuses.push(appointmentStatus);
 
     res.status(201).json({
       status: "success",
@@ -81,7 +81,7 @@ export const updateAppointment = asyncHandler(
 
     const savedAppointment = await Appointment.findFirst({
       where: { appointmentId: { equals: appointmentId } },
-      include: { appointmentStatus: true },
+      include: { statuses: true },
     });
 
     if (!savedAppointment) {
@@ -90,7 +90,7 @@ export const updateAppointment = asyncHandler(
       );
     }
 
-    if (isApprovedAppointment(savedAppointment.appointmentStatus)) {
+    if (isApprovedAppointment(savedAppointment.statuses)) {
       return next(
         new AppError("Can't update to already approved appointment", 400)
       );
@@ -104,7 +104,7 @@ export const updateAppointment = asyncHandler(
         patientId: true,
         doctorId: true,
         subject: true,
-        appointmentStatus: true,
+        statuses: true,
         startsAt: true,
         endsAt: true,
         doctorsComment: true,
@@ -128,7 +128,7 @@ export const updateAppointment = asyncHandler(
       },
     });
 
-    updatedAppointment.appointmentStatus.push(appointmentStatus);
+    updatedAppointment.statuses.push(appointmentStatus);
 
     res.status(200).json({
       status: "success",
@@ -144,7 +144,24 @@ export const getAppointment = asyncHandler(
 
     const appointment = await Appointment.findFirst({
       where: { appointmentId: { equals: appointmentId } },
-      include: { appointmentStatus: true },
+      include: {
+        statuses: { select: { status: true } },
+        doctor: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            imageUrl: true,
+            gender: true,
+            role: true,
+            accessTokens: {
+              select: { createdAt: true },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
+      },
     });
 
     if (!appointment) {
@@ -167,7 +184,24 @@ export const getAppointmentsByDoctor = asyncHandler(
 
     const appointments = await Appointment.findMany({
       where: { doctorId: { equals: doctorId } },
-      include: { appointmentStatus: true },
+      include: {
+        statuses: { select: { status: true } },
+        patient: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            imageUrl: true,
+            gender: true,
+            role: true,
+            accessTokens: {
+              select: { createdAt: true },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
+      },
     });
 
     if (!appointments) {
@@ -190,7 +224,24 @@ export const getAppointmentsByPatient = asyncHandler(
 
     const appointments = await Appointment.findMany({
       where: { patientId: { equals: patientId } },
-      include: { appointmentStatus: true },
+      include: {
+        statuses: { select: { status: true } },
+        doctor: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            imageUrl: true,
+            gender: true,
+            role: true,
+            accessTokens: {
+              select: { createdAt: true },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
+      },
     });
 
     if (!appointments) {
@@ -213,7 +264,24 @@ export const getAllAppointments = asyncHandler(
 
     const appointments = await Appointment.findMany({
       where: { patientId: { equals: patientId } },
-      include: { appointmentStatus: true },
+      include: {
+        statuses: { select: { status: true } },
+        doctor: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            imageUrl: true,
+            gender: true,
+            role: true,
+            accessTokens: {
+              select: { createdAt: true },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
+          },
+        },
+      },
     });
 
     if (!appointments) {
@@ -236,7 +304,7 @@ export const deleteAppointment = asyncHandler(
 
     const appointment = await Appointment.findFirst({
       where: { appointmentId: { equals: appointmentId } },
-      include: { appointmentStatus: true },
+      include: { statuses: true },
     });
 
     if (!appointment) {
@@ -245,7 +313,7 @@ export const deleteAppointment = asyncHandler(
       );
     }
 
-    if (isApprovedAppointment(appointment.appointmentStatus)) {
+    if (isApprovedAppointment(appointment.statuses)) {
       return next(
         new AppError("Can't delete to already approved appointment", 400)
       );

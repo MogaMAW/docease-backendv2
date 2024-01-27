@@ -59,19 +59,19 @@ model AccessToken {
 }
 
 model Appointment {
-  appointmentId     String              @id @default(uuid())
-  patient           User                @relation("patient", fields: [patientId], references: [userId])
-  patientId         String
-  doctor            User                @relation("doctor", fields: [doctorId], references: [userId])
-  doctorId          String
-  subject           String              @db.Text
-  startsAt          DateTime
-  endsAt            DateTime
-  doctorsComment    String?
-  patientsComment   String?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime?           @updatedAt
-  appointmentStatus AppointmentStatus[]
+  appointmentId   String              @id @default(uuid())
+  patient         User                @relation("patient", fields: [patientId], references: [userId])
+  patientId       String
+  doctor          User                @relation("doctor", fields: [doctorId], references: [userId])
+  doctorId        String
+  subject         String              @db.Text
+  startsAt        DateTime
+  endsAt          DateTime
+  doctorsComment  String?
+  patientsComment String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime?           @updatedAt
+  statuses        AppointmentStatus[]
 
   @@index([appointmentId])
   @@index([patientId])
