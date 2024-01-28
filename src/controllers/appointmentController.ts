@@ -2,6 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/error";
 import { asyncHandler } from "../utils/asyncHandler";
 import { PrismaClient } from "@prisma/client";
+import {
+  AppointmentStatusObject as StatusObject,
+  TAppointmentStatus,
+} from "../types/appointment";
 
 const prisma = new PrismaClient();
 const Appointment = prisma.appointment;
@@ -14,6 +18,42 @@ const isApprovedAppointment = (appointmentStatusArray: any): boolean => {
     if (status === "approved") isApproved = true;
   });
   return isApproved;
+};
+
+const appointmentStatusObject = (
+  statusArray: TAppointmentStatus[]
+): StatusObject => {
+  const status: StatusObject = {
+    pending: "",
+    rescheduled: "",
+    edited: "",
+    approved: "",
+    cancelled: "",
+    done: "",
+  };
+
+  statusArray.map((appointmentStatus: TAppointmentStatus) => {
+    if (appointmentStatus.status === "pending") {
+      status.pending = "pending";
+    }
+    if (appointmentStatus.status === "rescheduled") {
+      status.rescheduled = "rescheduled";
+    }
+    if (appointmentStatus.status === "edited") {
+      status.edited = "edited";
+    }
+    if (appointmentStatus.status === "approved") {
+      status.approved = "approved";
+    }
+    if (appointmentStatus.status === "cancelled") {
+      status.cancelled = "cancelled";
+    }
+    if (appointmentStatus.status === "done") {
+      status.done = "done";
+    }
+  });
+
+  return status;
 };
 
 export const postAppointment = asyncHandler(
@@ -347,6 +387,8 @@ export const rescheduleAppointment = asyncHandler(
     const startsAt = req.body.startsAt as string;
     const endsAt = req.body.patientId as string;
 
+    console.log("req.body", req.body);
+
     if (!appointmentId) {
       return next(new AppError("Please provide appointmentId", 400));
     }
@@ -384,20 +426,22 @@ export const rescheduleAppointment = asyncHandler(
       },
     });
 
-    const SavedStatuses = await AppointmentStatus.findMany({
+    const SavedStatuses: any = await AppointmentStatus.findMany({
       where: { appointmentId: { equals: appointmentId } },
     });
 
-    let isAppointmentRescheduled: boolean = false;
+    const statusObj = appointmentStatusObject(SavedStatuses);
+
+    if (statusObj.cancelled) {
+      await AppointmentStatus.updateMany({
+        where: { appointmentId: appointmentId, status: "cancelled" },
+        data: { status: "pending" },
+      });
+    }
+
     let appointmentStatus: any;
 
-    SavedStatuses.map((appointmentStatus) => {
-      if (appointmentStatus.status === "rescheduled") {
-        isAppointmentRescheduled = true;
-      }
-    });
-
-    if (!isAppointmentRescheduled) {
+    if (!statusObj.rescheduled) {
       appointmentStatus = await AppointmentStatus.create({
         data: {
           appointmentId: updatedAppointment.appointmentId,
@@ -438,19 +482,23 @@ export const approveAppointment = asyncHandler(
       );
     }
 
-    const SavedStatuses = await AppointmentStatus.findMany({
+    const SavedStatuses: any = await AppointmentStatus.findMany({
       where: { appointmentId: { equals: appointmentId } },
     });
 
-    let isAppointmentApproved: boolean = false;
-    SavedStatuses.map((appointmentStatus) => {
-      if (appointmentStatus.status === "approved") {
-        isAppointmentApproved = true;
-      }
-    });
+    const statusObj = appointmentStatusObject(SavedStatuses);
 
-    if (isAppointmentApproved) {
+    if (statusObj.approved) {
       return next(new AppError("Appointment is already approved", 400));
+    }
+
+    if (statusObj.cancelled) {
+      return next(new AppError("Can't approve cancelled appointment", 400));
+    }
+
+    const isExpired = new Date(Date.now()) > new Date(appointment.endsAt);
+    if (isExpired) {
+      return next(new AppError("Can't approve  missed appointment", 400));
     }
 
     await AppointmentStatus.create({
@@ -480,9 +528,33 @@ export const cancelAppointment = asyncHandler(
       );
     }
 
-    await AppointmentStatus.updateMany({
-      where: { appointmentId: appointmentId, status: "pending" },
-      data: { status: "cancelled" },
+    const SavedStatuses: any = await AppointmentStatus.findMany({
+      where: { appointmentId: { equals: appointmentId } },
+    });
+
+    const statusObj = appointmentStatusObject(SavedStatuses);
+
+    if (statusObj.cancelled) {
+      return next(new AppError("Appointment is already cancelled ", 400));
+    }
+
+    await AppointmentStatus.deleteMany({
+      where: {
+        OR: [
+          {
+            appointmentId: { equals: appointmentId },
+            status: { equals: "pending" },
+          },
+          {
+            appointmentId: { equals: appointmentId },
+            status: { equals: "approved" },
+          },
+        ],
+      },
+    });
+
+    await AppointmentStatus.create({
+      data: { appointmentId: appointmentId, status: "cancelled" },
     });
 
     if (doctorsComment) {
