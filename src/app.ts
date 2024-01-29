@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import { errorController } from "./controllers/errorController";
 import { userRoutes } from "./routes/userRoutes";
 import { appointmentRoutes } from "./routes/appointmentRoutes";
+import { scheduleRoutes } from "./routes/scheduleRoutes";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use(logger("dev"));
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/appointments", appointmentRoutes);
+app.use("/api/v1/schedules", scheduleRoutes);
 
 app.use(errorController);
 

@@ -36,6 +36,7 @@ model User {
   patient                Appointment[] @relation("patient")
   doctor                 Appointment[] @relation("doctor")
   accessTokens           AccessToken[]
+  schedule               Schedule[]
 
   @@index([userId])
   @@index([email])
@@ -100,6 +101,46 @@ model AppointmentStatus {
   @@index([appointmentId])
   @@index([status])
   @@map("_appointment_statuses")
+}
+
+enum Weekday {
+  sunday
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+}
+
+model Schedule {
+  scheduleId   String         @id @default(uuid())
+  user         User           @relation(fields: [userId], references: [userId])
+  userId       String
+  weekday      Weekday
+  weekdayNum   Int
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime?      @updatedAt
+  scheduleTime ScheduleTime[]
+
+  @@index([scheduleId])
+  @@index([userId])
+  @@index([weekday])
+  @@map("_schedules")
+}
+
+model ScheduleTime {
+  scheduleTimeId String    @id @default(uuid())
+  schedule       Schedule  @relation(fields: [scheduleId], references: [scheduleId])
+  scheduleId     String
+  start          String
+  end            String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+
+  @@index([scheduleTimeId])
+  @@index([scheduleId])
+  @@map("_schedule_times")
 }
 
 // PRISMA COMMNANDS 
