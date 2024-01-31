@@ -126,12 +126,6 @@ export const getSchedulesByUser = asyncHandler(
       },
     });
 
-    if (!schedules[0]) {
-      return next(
-        new AppError("We couldn't find schedule of the provided userId", 404)
-      );
-    }
-
     res.status(200).json({
       status: "success",
       message: "Schedules fetched",

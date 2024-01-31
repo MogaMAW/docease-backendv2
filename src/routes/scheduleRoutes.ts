@@ -15,9 +15,9 @@ const router = express.Router();
 router.post("/post", protect, postSchedule);
 router.get("/get/:scheduleId", protect, getSchedule);
 router.get("/get-by-user", protect, getSchedulesByUser);
-router.get("/delete/:scheduleId", protect, deleteSchedule);
+router.delete("/delete/:scheduleId", protect, deleteSchedule);
 router.post("/post-schedule-time", protect, postScheduleTime);
-router.post("/update-schedule-time", protect, updateScheduleTime);
-router.post("/delete-schedule-time", protect, deleteScheduleTime);
+router.patch("/update-schedule-time", protect, updateScheduleTime);
+router.delete("/delete-schedule-time", protect, deleteScheduleTime);
 
 export { router as scheduleRoutes };
