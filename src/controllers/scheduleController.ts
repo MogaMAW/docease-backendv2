@@ -39,9 +39,7 @@ export const postSchedule = asyncHandler(
       return next(new AppError("Please provide appointmentId", 400));
     }
 
-    const weekdayNum = getWeekdayNumber(weekday);
-
-    if (!weekdayNum) {
+    if (!weekday) {
       return next(new AppError("Please provide valid weekday", 400));
     }
 
@@ -52,6 +50,8 @@ export const postSchedule = asyncHandler(
     if (schedule) {
       return next(new AppError("weekday already has already been added", 400));
     }
+
+    const weekdayNum = getWeekdayNumber(weekday)!;
 
     const newSchedule = await Schedule.create({
       data: { userId: userId, weekday: weekday, weekdayNum: weekdayNum },
