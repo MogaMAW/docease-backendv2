@@ -224,7 +224,7 @@ export const updateScheduleTime = asyncHandler(
 
     res.status(200).json({
       status: "success",
-      message: "Schedule time created",
+      message: "Schedule time update",
       data: { scheduleTime: scheduleTime },
     });
   }
