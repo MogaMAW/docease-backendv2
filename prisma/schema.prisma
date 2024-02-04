@@ -19,24 +19,26 @@ enum Gender {
 }
 
 model User {
-  userId                 String        @id @default(uuid())
-  firstName              String        @db.Text
-  lastName               String        @db.Text
-  email                  String        @unique @db.Text
+  userId                 String          @id @default(uuid())
+  firstName              String          @db.Text
+  lastName               String          @db.Text
+  email                  String          @unique @db.Text
   phoneNumber            String
   gender                 Gender
-  role                   Role          @default(patient)
-  password               String        @db.Text
-  imageUrl               String?       @db.Text
-  imagePath              String?       @db.Text
-  passwordResetToken     String?       @db.Text
+  role                   Role            @default(patient)
+  password               String          @db.Text
+  imageUrl               String?         @db.Text
+  imagePath              String?         @db.Text
+  passwordResetToken     String?         @db.Text
   passwordResetExpiresAt DateTime?
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime?     @updatedAt
-  patient                Appointment[] @relation("patient")
-  doctor                 Appointment[] @relation("doctor")
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime?       @updatedAt
+  patient                Appointment[]   @relation("patient")
+  doctor                 Appointment[]   @relation("doctor")
   accessTokens           AccessToken[]
   schedule               Schedule[]
+  medicalFile            MedicalFile[]
+  medicalRecord          MedicalRecord[]
 
   @@index([userId])
   @@index([email])
@@ -141,6 +143,37 @@ model ScheduleTime {
   @@index([scheduleTimeId])
   @@index([scheduleId])
   @@map("_schedule_times")
+}
+
+model MedicalFile {
+  medicalFileId String    @id @default(uuid())
+  User          User      @relation(fields: [userId], references: [userId])
+  userId        String
+  name          String
+  path          String
+  url           String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt
+
+  @@index([medicalFileId])
+  @@index([userId])
+  @@map("_medical_files")
+}
+
+model MedicalRecord {
+  medicalRecordId String    @id @default(uuid())
+  User            User      @relation(fields: [userId], references: [userId])
+  userId          String
+  healthStatus    String
+  medication      String
+  illness         String
+  diet            String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+
+  @@index([medicalRecordId])
+  @@index([userId])
+  @@map("_medical_records")
 }
 
 // PRISMA COMMNANDS 
