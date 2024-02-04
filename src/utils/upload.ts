@@ -11,7 +11,8 @@ dotenv.config();
 const multerConfig = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    // fileSize: 10 * 1024 * 1024,
+    fileSize: 20 * 1024 * 1024,
   },
 });
 export const uploadFile = multerConfig.single("file");
