@@ -39,6 +39,7 @@ model User {
   schedule               Schedule[]
   medicalFile            MedicalFile[]
   medicalRecord          MedicalRecord[]
+  mentalHealth           MentalHealth[]
 
   @@index([userId])
   @@index([email])
@@ -174,6 +175,21 @@ model MedicalRecord {
   @@index([medicalRecordId])
   @@index([userId])
   @@map("_medical_records")
+}
+
+// Mental health assessment model
+model MentalHealth {
+  mentalHealthId    String    @id @default(uuid())
+  User              User      @relation(fields: [userId], references: [userId])
+  userId            String
+  answeredQuestions Json
+  aiResponse        Json
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime? @updatedAt
+
+  @@index([mentalHealthId])
+  @@index([userId])
+  @@map("_mental_health")
 }
 
 // PRISMA COMMNANDS 
