@@ -155,6 +155,62 @@ export const signIn = asyncHandler(
   }
 );
 
+export const signInDoctor = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const email = req.body.email as string;
+    const password = req.body.password as string;
+
+    if (!email || !password) {
+      return next(new AppError("Missing email or password", 400));
+    }
+    const user = await User.findFirst({
+      where: { email: { equals: email } },
+    });
+
+    if (user?.role !== "doctor") {
+      return next(
+        new AppError(
+          "You don't have necessary permissions to access account!",
+          403
+        )
+      );
+    }
+
+    if (!user || !(await compare(password, user.password))) {
+      return next(new AppError("Wrong email or password", 400));
+    }
+    authenticate(user, 200, res);
+  }
+);
+
+export const signInPatient = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const email = req.body.email as string;
+    const password = req.body.password as string;
+
+    if (!email || !password) {
+      return next(new AppError("Missing email or password", 400));
+    }
+    const user = await User.findFirst({
+      where: { email: { equals: email } },
+    });
+
+    if (user?.role !== "patient") {
+      return next(
+        new AppError(
+          "You don't have necessary permissions to access account!",
+          403
+        )
+      );
+    }
+
+    if (!user || !(await compare(password, user.password))) {
+      return next(new AppError("Wrong email or password", 400));
+    }
+    authenticate(user, 200, res);
+  }
+);
+
 export const forgotPassword = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const email = req.body.email as string;

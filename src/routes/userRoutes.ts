@@ -11,6 +11,8 @@ import {
   protect,
   getUser,
   getUserByRole,
+  signInPatient,
+  signInDoctor,
 } from "../controllers/userController";
 import { uploadFile } from "../utils/upload";
 
@@ -20,6 +22,8 @@ router.post("/patients/signup", setUserRole, signUp);
 router.post("/doctors/signup", setUserRole, signUp);
 router.post("/admins/signup", setUserRole, signUp);
 router.post("/signin", signIn);
+router.post("/patient/signin", signInPatient);
+router.post("/doctor/signin", signInDoctor);
 router.post("/forgot-password", forgotPassword);
 router.patch("/reset-password/:token", resetPassword);
 router.patch("/edit-user-details/:userId", protect, editUserDetails);
