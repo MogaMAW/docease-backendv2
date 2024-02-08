@@ -10,6 +10,7 @@ import { appointmentRoutes } from "./routes/appointmentRoutes";
 import { scheduleRoutes } from "./routes/scheduleRoutes";
 import { medicalRecordRoutes } from "./routes/medicalRoutes";
 import { mentalHealthRoutes } from "./routes/mentalHealthRoutes";
+import { keepActiveRoutes } from "./routes/keepActiveRoutes";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use("/api/v1/schedules", scheduleRoutes);
 app.use("/api/v1/medical-records", medicalRecordRoutes);
 app.use("/api/v1/mental-health", mentalHealthRoutes);
 
+app.use(keepActiveRoutes);
 app.use(errorController);
 
 app.use("*", (req: Request, res: Response) => {
