@@ -18,7 +18,8 @@ const app = express();
 
 let url: string;
 if (process.env.NODE_ENV === "production") {
-  app.use(cors({ origin: process.env.FRONTEND_URL }));
+  // app.use(cors({ origin: process.env.FRONTEND_URL }));
+  app.use(cors({ origin: "*" }));
   url = process.env.FRONTEND_URL!;
 } else {
   app.use(cors());
