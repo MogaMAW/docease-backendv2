@@ -40,6 +40,8 @@ model User {
   medicalFile            MedicalFile[]
   medicalRecord          MedicalRecord[]
   mentalHealth           MentalHealth[]
+  notification           Notification[]
+  onlineStatus           OnlineStatus?
 
   @@index([userId])
   @@index([email])
@@ -60,6 +62,18 @@ model AccessToken {
   @@index([userId])
   @@index([token])
   @@map("_access_tokens")
+}
+
+model OnlineStatus {
+  onlineStatusId String    @id @default(uuid())
+  User           User      @relation(fields: [userId], references: [userId])
+  userId         String    @unique
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+
+  @@index([onlineStatusId])
+  @@index([userId])
+  @@map("_online_statuses")
 }
 
 model Appointment {
@@ -190,6 +204,21 @@ model MentalHealth {
   @@index([mentalHealthId])
   @@index([userId])
   @@map("_mental_health")
+}
+
+model Notification {
+  notificationId Int       @id @default(autoincrement())
+  User           User      @relation(fields: [userId], references: [userId])
+  userId         String
+  message        String    @db.Text
+  link           String?   @db.Text
+  isRead         Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+
+  @@index([notificationId])
+  @@index([userId])
+  @@map("_notifications")
 }
 
 // PRISMA COMMNANDS 
