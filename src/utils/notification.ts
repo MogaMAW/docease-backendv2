@@ -1,11 +1,12 @@
 import { EventEmitter } from "events";
-import { initializeApp } from "firebase/app";
-import { getMessaging } from "firebase/messaging";
+// import { initializeApp } from "firebase/app";
+// import { getMessaging } from "firebase/messaging";
 import {
   TNotification,
   TPushNotificationTitleEnum,
 } from "../types/notification";
-import { firebaseConfig } from "../config/firebase";
+// import { firebaseConfig,  } from "../config/firebase";
+import { firebaseAdmin } from "../config/firebaseAdmin";
 
 class Notification {
   private eventEmitter: EventEmitter;
@@ -14,8 +15,9 @@ class Notification {
   constructor() {
     this.eventEmitter = new EventEmitter();
 
-    const firebaseApp = initializeApp(firebaseConfig);
-    this.firebaseMessaging = getMessaging(firebaseApp);
+    // const firebaseApp = initializeApp(firebaseConfig);
+    // this.firebaseMessaging = getMessaging(firebaseApp);
+    this.firebaseMessaging = firebaseAdmin.messaging;
   }
 
   emitNotificationEvent(message: TNotification) {
@@ -26,7 +28,7 @@ class Notification {
     return this.eventEmitter;
   }
 
-  sendPushNotification(
+  async sendPushNotification(
     deviceToken: string,
     title: TPushNotificationTitleEnum,
     bodyContent: string
@@ -53,14 +55,19 @@ class Notification {
       token: deviceToken,
     };
 
-    this.firebaseMessaging
-      .send(message)
-      .then((response: string) => {
-        console.log("Successfully sent message:", response);
-      })
-      .catch((error: any) => {
-        console.error("Error sending FCM message:", error);
-      });
+    // this.firebaseMessaging
+    //   .send(message)
+    //   .then((response: string) => {
+    //   })
+    //   .catch((error: any) => {
+    //     console.error("Error sending FCM message:", error);
+    //   });
+    try {
+      const response = await this.firebaseMessaging.send(message);
+      console.log("Successfully sent message:", response);
+    } catch (error) {
+      console.error("Error sending FCM message:", error);
+    }
   }
 }
 
