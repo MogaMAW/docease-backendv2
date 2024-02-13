@@ -42,6 +42,7 @@ model User {
   mentalHealth           MentalHealth[]
   notification           Notification[]
   onlineStatus           OnlineStatus?
+  userDevice             Device[]
 
   @@index([userId])
   @@index([email])
@@ -207,7 +208,7 @@ model MentalHealth {
 }
 
 model Notification {
-  notificationId Int       @id @default(autoincrement())
+  notificationId String    @id @default(uuid())
   User           User      @relation(fields: [userId], references: [userId])
   userId         String
   message        String    @db.Text
@@ -219,6 +220,22 @@ model Notification {
   @@index([notificationId])
   @@index([userId])
   @@map("_notifications")
+}
+
+model Device {
+  deviceId       String    @id @default(uuid())
+  User           User      @relation(fields: [userId], references: [userId])
+  userId         String
+  deviceToken    String    @unique @db.Text
+  devicePlatform String    @unique @db.Text
+  isDisable      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+
+  @@index([deviceId])
+  @@index([deviceToken])
+  @@index([userId])
+  @@map("_devices")
 }
 
 // PRISMA COMMNANDS 

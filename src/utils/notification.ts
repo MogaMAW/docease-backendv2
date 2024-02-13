@@ -1,11 +1,21 @@
 import { EventEmitter } from "events";
-import { TNotification } from "../types/notification";
+import { initializeApp } from "firebase/app";
+import { getMessaging } from "firebase/messaging";
+import {
+  TNotification,
+  TPushNotificationTitleEnum,
+} from "../types/notification";
+import { firebaseConfig } from "../config/firebase";
 
 class Notification {
   private eventEmitter: EventEmitter;
+  private firebaseMessaging: any;
 
   constructor() {
     this.eventEmitter = new EventEmitter();
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    this.firebaseMessaging = getMessaging(firebaseApp);
   }
 
   emitNotificationEvent(message: TNotification) {
@@ -16,7 +26,42 @@ class Notification {
     return this.eventEmitter;
   }
 
-  // TODO: To include push notifications using FCM
+  sendPushNotification(
+    deviceToken: string,
+    title: TPushNotificationTitleEnum,
+    bodyContent: string
+  ) {
+    // const message = {
+    //   // data: {
+    //   //   score: '850',
+    //   //   time: '2:45'
+    //   // },
+    //   data: data,
+    //   token: deviceToken,
+    // };
+    const message = {
+      notification: {
+        title: title,
+        body: bodyContent,
+        requireInteraction: true,
+      },
+      webpush: {
+        notification: {
+          icon: "https://res.cloudinary.com/dlmv4ot9h/image/upload/v1707821338/DoceaseV2/docease-logo.jpg",
+        },
+      },
+      token: deviceToken,
+    };
+
+    this.firebaseMessaging
+      .send(message)
+      .then((response: string) => {
+        console.log("Successfully sent message:", response);
+      })
+      .catch((error: any) => {
+        console.error("Error sending FCM message:", error);
+      });
+  }
 }
 
 const notification = new Notification();
