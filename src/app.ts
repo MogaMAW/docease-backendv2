@@ -13,6 +13,7 @@ import { mentalHealthRoutes } from "./routes/mentalHealthRoutes";
 import { keepActiveRoutes } from "./routes/keepActiveRoutes";
 import { notificationRoutes } from "./routes/notificationRoutes";
 import { deviceRoutes } from "./routes/deviceRoutes";
+import { statusRoutes } from "./routes/statusRoutes";
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use("/api/v1/medical-records", medicalRecordRoutes);
 app.use("/api/v1/mental-health", mentalHealthRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/devices", deviceRoutes);
+app.use("/api/v1/status", statusRoutes);
 
 app.use(keepActiveRoutes);
 app.use(errorController);
