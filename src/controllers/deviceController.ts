@@ -142,7 +142,7 @@ export const disableDevice = asyncHandler(
   }
 );
 
-export const unDisableDevice = asyncHandler(
+export const enableDevice = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const deviceId = req.params.deviceId as string;
 
