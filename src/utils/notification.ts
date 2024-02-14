@@ -14,6 +14,7 @@ class Notification {
 
   constructor() {
     this.eventEmitter = new EventEmitter();
+    this.eventEmitter.setMaxListeners(50);
 
     // const firebaseApp = initializeApp(firebaseConfig);
     // this.firebaseMessaging = getMessaging(firebaseApp);

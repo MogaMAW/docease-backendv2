@@ -6,16 +6,16 @@ import {
   getDevice,
   getDeviceByUser,
   postDevice,
-  unDisableDevice,
+  enableDevice,
 } from "../controllers/deviceController";
 
 const router = express.Router();
 
 router.post("/post", protect, postDevice);
 router.get("/get/:deviceId", protect, getDevice);
-router.get("/get", protect, getDeviceByUser);
+router.get("/get-by-user", protect, getDeviceByUser);
 router.delete("/delete/:deviceId", protect, deleteDevice);
 router.patch("/disable/:deviceId", protect, disableDevice);
-router.patch("/un-disable/:deviceId", protect, unDisableDevice);
+router.patch("/enable/:deviceId", protect, enableDevice);
 
 export { router as deviceRoutes };
