@@ -20,7 +20,7 @@ export const postDevice = asyncHandler(
       return next(new AppError("Please both device token and platform", 400));
     }
 
-    const device = await Device.findMany({
+    const device = await Device.findFirst({
       where: { deviceToken: { equals: deviceToken } },
     });
 

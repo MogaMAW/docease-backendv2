@@ -7,6 +7,7 @@ import { TNotification } from "../types/notification";
 
 const prisma = new PrismaClient();
 const Notification = prisma.notification;
+const Device = prisma.device;
 
 const saveNotification = async (notificationMsg: TNotification) => {
   await Notification.create({
@@ -27,6 +28,27 @@ const sendSSENotificationToOneClient = async (
   if (!res) return;
 
   res.write(`data: ${JSON.stringify({ message, userId })}\n\n`);
+};
+
+const sendPushNotification = async (notificationMsg: TNotification) => {
+  // TODO: to add logic of only sending push notification when user is offline
+  if (!notificationMsg.userId) return;
+  const devices = await Device.findMany({
+    where: { userId: notificationMsg.userId },
+  });
+  if (!devices[0]) return;
+
+  devices.map(async (device) => {
+    if (device.isDisable) return;
+
+    await notification.sendPushNotification({
+      userId: notificationMsg.userId,
+      message: notificationMsg.message,
+      deviceToken: device.deviceToken,
+      title: notificationMsg.title,
+      body: notificationMsg.body,
+    });
+  });
 };
 
 export const getLiveNotifications = asyncHandler(
@@ -61,7 +83,9 @@ export const getLiveNotifications = asyncHandler(
           notificationMsg.userId,
           notificationMsg.message
         );
-        // TODO: send push notifications here
+
+        //sending push notification
+        sendPushNotification(notificationMsg);
       });
 
     req.on("close", () => {
@@ -69,5 +93,3 @@ export const getLiveNotifications = asyncHandler(
     });
   }
 );
-
-// TODO: To add statusController

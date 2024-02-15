@@ -6,6 +6,8 @@ import {
   AppointmentStatusObject as StatusObject,
   TAppointmentStatus,
 } from "../types/appointment";
+import { notification } from "../utils/notification";
+import { TPushNotificationTitleEnum } from "../types/notification";
 
 const prisma = new PrismaClient();
 const Appointment = prisma.appointment;
@@ -98,6 +100,14 @@ export const postAppointment = asyncHandler(
 
     newAppointment.statuses.push(appointmentStatus);
 
+    // Emit notification event
+    notification.emitNotificationEvent({
+      userId: doctorId,
+      message: "New appointment from patient",
+      title: TPushNotificationTitleEnum.APPOINTMENT,
+      body: "New appointment from patient",
+    });
+
     res.status(201).json({
       status: "success",
       message: "Appointment created",
@@ -173,6 +183,13 @@ export const updateAppointment = asyncHandler(
     });
 
     updatedAppointment.statuses.push(appointmentStatus);
+    // Emit notification event
+    notification.emitNotificationEvent({
+      userId: doctorId,
+      message: "Patient has edited appointment schedule",
+      title: TPushNotificationTitleEnum.APPOINTMENT,
+      body: "Patient has edited appointment schedule",
+    });
 
     res.status(200).json({
       status: "success",
@@ -458,6 +475,13 @@ export const rescheduleAppointment = asyncHandler(
     }
 
     updatedAppointment.statuses.push(appointmentStatus);
+    // Emit notification event
+    notification.emitNotificationEvent({
+      userId: patientId,
+      message: "Doctor has rescheduled your appointment",
+      title: TPushNotificationTitleEnum.APPOINTMENT,
+      body: "Doctor has rescheduled your appointment",
+    });
 
     res.status(200).json({
       status: "success",
@@ -503,6 +527,14 @@ export const approveAppointment = asyncHandler(
 
     await AppointmentStatus.create({
       data: { appointmentId: appointmentId, status: "approved" },
+    });
+
+    // Emit notification event
+    notification.emitNotificationEvent({
+      userId: appointment.patientId,
+      message: "Doctor has approved your appointment",
+      title: TPushNotificationTitleEnum.APPOINTMENT,
+      body: "Doctor has approved your appointment",
     });
 
     res.status(200).json({
@@ -563,6 +595,14 @@ export const cancelAppointment = asyncHandler(
         data: { doctorsComment: doctorsComment },
       });
     }
+
+    // Emit notification event
+    notification.emitNotificationEvent({
+      userId: appointment.patientId,
+      message: "Doctor has cancelled your appointment",
+      title: TPushNotificationTitleEnum.APPOINTMENT,
+      body: "Doctor has cancelled your appointment",
+    });
 
     res.status(200).json({
       status: "success",
