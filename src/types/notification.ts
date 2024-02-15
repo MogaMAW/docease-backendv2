@@ -1,6 +1,9 @@
 export type TNotification = {
   userId: string;
   message: string;
+  deviceToken?: string;
+  title?: TPushNotificationTitleEnum;
+  body?: string;
 };
 
 export enum TPushNotificationTitleEnum {
@@ -12,5 +15,5 @@ export enum TPushNotificationTitleEnum {
 export type TPushNotificationInput = {
   deviceToken: string;
   title: TPushNotificationTitleEnum;
-  bodyContent: string;
+  body: string;
 };
