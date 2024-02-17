@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import logger from "morgan";
 import http from "http";
 import { Server } from "socket.io";
+import { ExpressPeerServer } from "peer";
 import { errorController } from "./controllers/errorController";
 import { userRoutes } from "./routes/userRoutes";
 import { appointmentRoutes } from "./routes/appointmentRoutes";
@@ -14,6 +15,8 @@ import { keepActiveRoutes } from "./routes/keepActiveRoutes";
 import { notificationRoutes } from "./routes/notificationRoutes";
 import { deviceRoutes } from "./routes/deviceRoutes";
 import { statusRoutes } from "./routes/statusRoutes";
+import { videoConferencingController } from "./controllers/videoConferencingController";
+import { videoConferenceRoutes } from "./routes/VideoConferencingRoutes";
 
 dotenv.config();
 
@@ -38,6 +41,13 @@ const io = new Server(server, {
   },
 });
 
+// const peerServer = ExpressPeerServer(server, {
+//   path: "/peerjs",
+// });
+const peerServer = ExpressPeerServer(server);
+
+// app.use("/api/v1/conferencing", peerServer);
+app.use("/peerjs", peerServer);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger("dev"));
@@ -50,7 +60,9 @@ app.use("/api/v1/mental-health", mentalHealthRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/devices", deviceRoutes);
 app.use("/api/v1/status", statusRoutes);
+app.use("/api/v1/conferences", videoConferenceRoutes);
 
+videoConferencingController(io);
 app.use(keepActiveRoutes);
 app.use(errorController);
 

@@ -19,22 +19,22 @@ enum Gender {
 }
 
 model User {
-  userId                 String          @id @default(uuid())
-  firstName              String          @db.Text
-  lastName               String          @db.Text
-  email                  String          @unique @db.Text
+  userId                 String            @id @default(uuid())
+  firstName              String            @db.Text
+  lastName               String            @db.Text
+  email                  String            @unique @db.Text
   phoneNumber            String
   gender                 Gender
-  role                   Role            @default(patient)
-  password               String          @db.Text
-  imageUrl               String?         @db.Text
-  imagePath              String?         @db.Text
-  passwordResetToken     String?         @db.Text
+  role                   Role              @default(patient)
+  password               String            @db.Text
+  imageUrl               String?           @db.Text
+  imagePath              String?           @db.Text
+  passwordResetToken     String?           @db.Text
   passwordResetExpiresAt DateTime?
-  createdAt              DateTime        @default(now())
-  updatedAt              DateTime?       @updatedAt
-  patient                Appointment[]   @relation("patient")
-  doctor                 Appointment[]   @relation("doctor")
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime?         @updatedAt
+  patient                Appointment[]     @relation("patient")
+  doctor                 Appointment[]     @relation("doctor")
   accessTokens           AccessToken[]
   schedule               Schedule[]
   medicalFile            MedicalFile[]
@@ -43,6 +43,8 @@ model User {
   notification           Notification[]
   onlineStatus           OnlineStatus?
   userDevice             Device[]
+  host                   VideoConference[] @relation("host")
+  attendee               VideoConference[] @relation("attendee")
 
   @@index([userId])
   @@index([email])
@@ -236,6 +238,21 @@ model Device {
   @@index([deviceToken])
   @@index([userId])
   @@map("_devices")
+}
+
+model VideoConference {
+  videoConferenceId String    @id @default(uuid())
+  Host              User      @relation("host", fields: [hostId], references: [userId])
+  hostId            String
+  Attendee          User      @relation("attendee", fields: [attendeeId], references: [userId])
+  attendeeId        String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime? @updatedAt
+
+  @@index([videoConferenceId])
+  @@index([hostId])
+  @@index([attendeeId])
+  @@map("_video_conferencies")
 }
 
 // PRISMA COMMNANDS 
