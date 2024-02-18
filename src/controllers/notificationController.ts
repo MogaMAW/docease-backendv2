@@ -115,6 +115,25 @@ const sendSSEConfNotificationToClient = async (
   );
 };
 
+const sendPeerIdToClient = async (
+  userId: string,
+  videoConferenceId: string,
+  peerId: string,
+  message: string
+) => {
+  const res = clientResponseMap.get(userId);
+  if (!res) return;
+
+  res.write(
+    `data: ${JSON.stringify({
+      message,
+      userId,
+      peerId,
+      videoConferenceId,
+    })}\n\n`
+  );
+};
+
 export const getLiveConferenceNotifications = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     res.setHeader("Content-Type", "text/event-stream");
@@ -140,6 +159,15 @@ export const getLiveConferenceNotifications = asyncHandler(
     notification
       .listenConfNotificationEvent()
       .on("conferenceNotification", (notificationMsg: TConfNotification) => {
+        if (notificationMsg.message === "confconnected") {
+          sendPeerIdToClient(
+            notificationMsg.userId,
+            notificationMsg.videoConferenceId,
+            notificationMsg.peerId!,
+            notificationMsg.message
+          );
+          return;
+        }
         if (notificationMsg.userId !== userId) return;
         sendSSEConfNotificationToClient(
           notificationMsg.userId,

@@ -22,4 +22,5 @@ export type TConfNotification = {
   userId: string;
   videoConferenceId: string;
   message?: string;
+  peerId?: string;
 };

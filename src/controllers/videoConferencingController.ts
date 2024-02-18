@@ -103,6 +103,41 @@ export const getVideoConference = asyncHandler(
   }
 );
 
+export const joinVideoConference = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const videoConferenceId = req.body.videoConferenceId as string;
+    const peerId = req.body.peerId as string;
+
+    if (!videoConferenceId || !peerId) {
+      return next(new AppError("Missing peerId or conferenceId", 400));
+    }
+    const conference = await VideoConference.findFirst({
+      where: { videoConferenceId: videoConferenceId },
+    });
+
+    if (!conference) {
+      return next(new AppError("No conference of provided Id was found", 404));
+    }
+
+    const userId = res.locals.user.userId;
+
+    const sendToUserId =
+      userId === conference.hostId ? conference.attendeeId : conference.hostId;
+
+    notification.emitConfNotificationEvent({
+      userId: sendToUserId,
+      message: "confconnected",
+      videoConferenceId: videoConferenceId,
+      peerId: peerId,
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Joined  conference  successfully",
+    });
+  }
+);
+
 //roomId is the videoConferencingId
 export const videoConferencingController = (io: any) => {
   io.on("connection", (socket: any) => {
