@@ -1,23 +1,34 @@
 import { EventEmitter } from "events";
-import { TNotification } from "../types/notification";
+import { TConfNotification, TNotification } from "../types/notification";
 import { firebaseAdmin } from "../config/firebaseAdmin";
 
 class Notification {
-  private eventEmitter: EventEmitter;
+  private notificationEventEmitter: EventEmitter;
+  private confNotificationEventEmitter: EventEmitter;
   private firebaseMessaging: any;
 
   constructor() {
-    this.eventEmitter = new EventEmitter();
-    this.eventEmitter.setMaxListeners(50);
+    this.notificationEventEmitter = new EventEmitter();
+    this.notificationEventEmitter.setMaxListeners(50);
+    this.confNotificationEventEmitter = new EventEmitter();
+    this.confNotificationEventEmitter.setMaxListeners(50);
     this.firebaseMessaging = firebaseAdmin.messaging();
   }
 
   emitNotificationEvent(message: TNotification) {
-    this.eventEmitter.emit("notification", message);
+    this.notificationEventEmitter.emit("notification", message);
   }
 
   listenNotificationEvent() {
-    return this.eventEmitter;
+    return this.notificationEventEmitter;
+  }
+
+  emitConfNotificationEvent(message: TConfNotification) {
+    this.confNotificationEventEmitter.emit("conferenceNotification", message);
+  }
+
+  listenConfNotificationEvent() {
+    return this.confNotificationEventEmitter;
   }
 
   async sendPushNotification(notification: TNotification) {

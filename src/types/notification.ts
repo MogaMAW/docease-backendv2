@@ -17,3 +17,9 @@ export type TPushNotificationInput = {
   title: TPushNotificationTitleEnum;
   body: string;
 };
+
+export type TConfNotification = {
+  userId: string;
+  videoConferenceId: string;
+  message?: string;
+};

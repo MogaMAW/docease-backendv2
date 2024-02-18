@@ -35,10 +35,11 @@ if (process.env.NODE_ENV === "production") {
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // origin: url,
-    origin: "*",
+    origin: url,
+    // origin: "*",
     methods: ["GET", "POST"],
   },
+  allowEIO3: true,
 });
 
 // const peerServer = ExpressPeerServer(server, {

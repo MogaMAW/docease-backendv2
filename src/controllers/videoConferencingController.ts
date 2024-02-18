@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/error";
 import { asyncHandler } from "../utils/asyncHandler";
 import { PrismaClient } from "@prisma/client";
+import { notification } from "../utils/notification";
+import { TVideoConference } from "../types/conferencing";
 
 const prisma = new PrismaClient();
 const VideoConference = prisma.videoConference;
@@ -10,8 +12,6 @@ export const getVideoConference = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const hostId = req.query.hostId as string;
     const attendeeId = req.query.attendeeId as string;
-
-    console.log("req.query", req.query);
 
     if (!hostId || !attendeeId) {
       return next(new AppError("Please provide both hostId and attendId", 400));
@@ -45,8 +45,6 @@ export const getVideoConference = asyncHandler(
         },
       },
     });
-
-    console.log("conference", conference);
 
     if (conference) {
       const isItLessThan30MinFromConfCreation: boolean =
@@ -108,13 +106,28 @@ export const getVideoConference = asyncHandler(
 //roomId is the videoConferencingId
 export const videoConferencingController = (io: any) => {
   io.on("connection", (socket: any) => {
+    console.log("socket id: " + socket.id);
+
     socket.on(
       "join-room",
-      (roomId: string, userPeerId: string, userId: string) => {
-        socket.join(roomId);
+      // (roomId: string, userPeerId: string, userId: string) => {
+      (conference: TVideoConference) => {
+        const roomId = conference.videoConferenceId;
+        const userId = conference.userId;
+        const userPeerId = conference.userPeerId;
+        const hostId = conference.hostId;
+
+        console.log("conference: ", conference);
 
         setTimeout(() => {
-          socket.to(roomId).broadcast.emit("user-connected", userPeerId);
+          // socket.to(roomId).broadcast.emit("user-connected", userPeerId);
+          socket.to(roomId).emit("user-connected", userPeerId);
+
+          if (userId !== hostId) return;
+          notification.emitConfNotificationEvent({
+            userId: userId,
+            videoConferenceId: roomId,
+          });
         }, 1000);
 
         socket.on("message", (message: string) => {

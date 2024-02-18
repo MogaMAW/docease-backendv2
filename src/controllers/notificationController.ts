@@ -3,11 +3,12 @@ import { AppError } from "../utils/error";
 import { asyncHandler } from "../utils/asyncHandler";
 import { notification } from "../utils/notification";
 import { PrismaClient } from "@prisma/client";
-import { TNotification } from "../types/notification";
+import { TConfNotification, TNotification } from "../types/notification";
 
 const prisma = new PrismaClient();
 const Notification = prisma.notification;
 const Device = prisma.device;
+const User = prisma.user;
 
 const saveNotification = async (notificationMsg: TNotification) => {
   await Notification.create({
@@ -86,6 +87,66 @@ export const getLiveNotifications = asyncHandler(
 
         //sending push notification
         sendPushNotification(notificationMsg);
+      });
+
+    req.on("close", () => {
+      clientResponseMap.delete(userId);
+    });
+  }
+);
+
+const sendSSEConfNotificationToClient = async (
+  userId: string,
+  videoConferenceId: string
+) => {
+  const res = clientResponseMap.get(userId);
+  if (!res) return;
+  const user = await User.findFirst({ where: { userId: userId } });
+  if (!user) return;
+
+  const isDoctor: boolean = user.role === "doctor";
+
+  const message = `Please join a call with ${
+    isDoctor ? "Dr." : "patient, " + user.firstName + " " + user.lastName
+  }`;
+
+  res.write(
+    `data: ${JSON.stringify({ message, userId, videoConferenceId })}\n\n`
+  );
+};
+
+export const getLiveConferenceNotifications = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.status(200);
+
+    const userId = res.locals.user.userId as string;
+    if (!userId) return next(new AppError("Please provide userId", 400));
+
+    clientResponseMap.set(userId, res);
+
+    res.write(
+      `data: ${JSON.stringify({ message: "warmup", userId: userId })}\n\n`
+    );
+
+    setInterval(() => {
+      res.write(
+        `data: ${JSON.stringify({ message: "heartbeat", userId: userId })}\n\n`
+      );
+    }, 30000);
+
+    notification
+      .listenConfNotificationEvent()
+      .on("conferenceNotification", (notificationMsg: TConfNotification) => {
+        if (notificationMsg.userId !== userId) return;
+        sendSSEConfNotificationToClient(
+          notificationMsg.userId,
+          notificationMsg.videoConferenceId!
+        );
+
+        // TODO: to send a push notification
       });
 
     req.on("close", () => {
