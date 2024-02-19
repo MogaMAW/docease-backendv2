@@ -52,12 +52,23 @@ export const getVideoConference = asyncHandler(
 
       if (!isItLessThan30MinFromConfCreation) return;
 
+      const userId = res.locals.user.userId;
+      const sendToUserId =
+        userId === conference.hostId
+          ? conference.attendeeId
+          : conference.hostId;
+
+      notification.emitConfNotificationEvent({
+        userId: sendToUserId,
+        message: "",
+        videoConferenceId: conference.videoConferenceId,
+      });
+
       res.status(200).json({
         status: "success",
         message: "fetched conference",
         data: { conference: conference },
       });
-      // TODO:trigger event to alert the user to enter the meeting
       // TODO:use both real time communication and push notifications
       return;
     }
@@ -92,14 +103,83 @@ export const getVideoConference = asyncHandler(
         },
       },
     });
+    // TODO:trigger event to alert the user to enter the meeting
+
+    const userId = res.locals.user.userId;
+    const sendToUserId =
+      userId === newConference.hostId
+        ? newConference.attendeeId
+        : newConference.hostId;
+
+    notification.emitConfNotificationEvent({
+      userId: sendToUserId,
+      message: "",
+      videoConferenceId: newConference.videoConferenceId,
+    });
 
     res.status(201).json({
       status: "success",
       message: "conference created",
       data: { conference: newConference },
     });
-    // TODO:trigger event to alert the user to enter the meeting
-    // TODO:use both real time communication and push notifications
+    // TODO:to implement push notifications for alerting joining
+  }
+);
+
+export const getVideoConferenceById = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const videoConferenceId = req.params.videoConferenceId as string;
+
+    if (!videoConferenceId) {
+      return next(new AppError("Please provide videoConferenceId", 400));
+    }
+
+    const conference = await VideoConference.findFirst({
+      where: {
+        videoConferenceId: { equals: videoConferenceId },
+      },
+      include: {
+        Host: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            gender: true,
+            role: true,
+            imageUrl: true,
+          },
+        },
+        Attendee: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            gender: true,
+            role: true,
+            imageUrl: true,
+          },
+        },
+      },
+    });
+
+    const userId: string = res.locals.user.userId;
+
+    const isAllowedUserId: boolean =
+      userId === conference?.hostId || userId === conference?.attendeeId;
+
+    if (!isAllowedUserId) {
+      return next(new AppError("Not allowed to join conference", 403));
+    }
+
+    if (!conference) {
+      return next(new AppError("Please provide videoConferenceId", 404));
+    }
+
+    res.status(201).json({
+      status: "success",
+      message: "conference fetched successfully",
+      data: { conference: conference },
+    });
   }
 );
 
