@@ -17,6 +17,6 @@ router.get("/get-by-user", protect, getMedicalRecordByUser);
 router.delete("/delete/:medicalRecordId", protect, deleteMedicalRecord);
 router.post("/post-file", uploadFile, protect, postMedicalRecordFile);
 router.get("/get-files-by-user", protect, getMedicalRecordFileByUser);
-router.get("/delete-file", protect, deleteMedicalRecordFile);
+router.delete("/delete-file/:medicalFileId", protect, deleteMedicalRecordFile);
 
 export { router as medicalRecordRoutes };
