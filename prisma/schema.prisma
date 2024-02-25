@@ -47,6 +47,8 @@ model User {
   attendee               VideoConference[] @relation("attendee")
   sender                 Chat[]            @relation("sender")
   recipient              Chat[]            @relation("recipient")
+  doctorsPatientDoctor   DoctorsPatient[]  @relation("doctor")
+  doctorsPatientPatient  DoctorsPatient[]  @relation("patient")
 
   @@index([userId])
   @@index([email])
@@ -274,6 +276,21 @@ model VideoConference {
   @@index([hostId])
   @@index([attendeeId])
   @@map("_video_conferencies")
+}
+
+model DoctorsPatient {
+  doctorsPatientId String    @id @default(uuid())
+  Doctor           User      @relation("doctor", fields: [doctorId], references: [userId])
+  doctorId         String
+  Patient          User      @relation("patient", fields: [patientId], references: [userId])
+  patientId        String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime? @updatedAt
+
+  @@index([doctorsPatientId])
+  @@index([doctorId])
+  @@index([patientId])
+  @@map("_doctors_patients")
 }
 
 // PRISMA COMMNANDS 

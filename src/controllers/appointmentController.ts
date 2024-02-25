@@ -8,6 +8,7 @@ import {
 } from "../types/appointment";
 import { notification } from "../utils/notification";
 import { TPushNotificationTitleEnum } from "../types/notification";
+import { createDoctorsPatient } from "./doctorsPatientController";
 
 const prisma = new PrismaClient();
 const Appointment = prisma.appointment;
@@ -97,6 +98,8 @@ export const postAppointment = asyncHandler(
         updatedAt: true,
       },
     });
+
+    await createDoctorsPatient(doctorId, patientId);
 
     newAppointment.statuses.push(appointmentStatus);
 
