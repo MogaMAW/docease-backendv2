@@ -45,6 +45,8 @@ model User {
   userDevice             Device[]
   host                   VideoConference[] @relation("host")
   attendee               VideoConference[] @relation("attendee")
+  sender                 Chat[]            @relation("sender")
+  recipient              Chat[]            @relation("recipient")
 
   @@index([userId])
   @@index([email])
@@ -207,6 +209,25 @@ model MentalHealth {
   @@index([mentalHealthId])
   @@index([userId])
   @@map("_mental_health")
+}
+
+model Chat {
+  messageId   String    @id @default(uuid())
+  sender      User      @relation("sender", fields: [senderId], references: [userId])
+  senderId    String
+  recipient   User      @relation("recipient", fields: [recipientId], references: [userId])
+  recipientId String
+  chatRoomId  String
+  message     String    @db.Text
+  isDelivered Boolean   @default(false)
+  isRead      Boolean   @default(false)
+  createdAt   DateTime
+  updatedAt   DateTime? @updatedAt
+
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([chatRoomId])
+  @@map("_chats")
 }
 
 model Notification {
