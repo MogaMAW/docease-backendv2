@@ -73,6 +73,25 @@ export const postMentalHealthAssessment = asyncHandler(
   }
 );
 
+export const getMentalHealthAssessment = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const mentalHealthId = req.params.mentalHealthId as string;
+
+    if (!mentalHealthId)
+      return next(new AppError("Please provide mentalHealthId", 400));
+
+    const mentalHealthAssessment = await MentalHealth.findFirst({
+      where: { mentalHealthId: { equals: mentalHealthId } },
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Mental health assessment fetched",
+      data: { mentalHealth: mentalHealthAssessment },
+    });
+  }
+);
+
 export const getMentalHealthAssessmentsByUser = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.query.userId as string;
