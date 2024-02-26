@@ -17,6 +17,9 @@ import { deviceRoutes } from "./routes/deviceRoutes";
 import { statusRoutes } from "./routes/statusRoutes";
 import { videoConferencingController } from "./controllers/videoConferencingController";
 import { videoConferenceRoutes } from "./routes/VideoConferencingRoutes";
+import { chatHandler } from "./controllers/chatController";
+import { chatRoutes } from "./routes/chatRoutes";
+import { doctorsPatientsRoutes } from "./routes/doctorsPatientRoute";
 
 dotenv.config();
 
@@ -62,7 +65,10 @@ app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/devices", deviceRoutes);
 app.use("/api/v1/status", statusRoutes);
 app.use("/api/v1/conferences", videoConferenceRoutes);
+app.use("/api/v1/chat", chatRoutes);
+app.use("/api/v1/doctors-patient", doctorsPatientsRoutes);
 
+chatHandler(io);
 videoConferencingController(io);
 app.use(keepActiveRoutes);
 app.use(errorController);

@@ -45,6 +45,10 @@ model User {
   userDevice             Device[]
   host                   VideoConference[] @relation("host")
   attendee               VideoConference[] @relation("attendee")
+  sender                 Chat[]            @relation("sender")
+  recipient              Chat[]            @relation("recipient")
+  doctorsPatientDoctor   DoctorsPatient[]  @relation("doctor")
+  doctorsPatientPatient  DoctorsPatient[]  @relation("patient")
 
   @@index([userId])
   @@index([email])
@@ -209,6 +213,25 @@ model MentalHealth {
   @@map("_mental_health")
 }
 
+model Chat {
+  messageId   String    @id @default(uuid())
+  sender      User      @relation("sender", fields: [senderId], references: [userId])
+  senderId    String
+  recipient   User      @relation("recipient", fields: [recipientId], references: [userId])
+  recipientId String
+  chatRoomId  String
+  message     String    @db.Text
+  isDelivered Boolean   @default(false)
+  isRead      Boolean   @default(false)
+  createdAt   DateTime
+  updatedAt   DateTime? @updatedAt
+
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([chatRoomId])
+  @@map("_chats")
+}
+
 model Notification {
   notificationId String    @id @default(uuid())
   User           User      @relation(fields: [userId], references: [userId])
@@ -253,6 +276,21 @@ model VideoConference {
   @@index([hostId])
   @@index([attendeeId])
   @@map("_video_conferencies")
+}
+
+model DoctorsPatient {
+  doctorsPatientId String    @id @default(uuid())
+  Doctor           User      @relation("doctor", fields: [doctorId], references: [userId])
+  doctorId         String
+  Patient          User      @relation("patient", fields: [patientId], references: [userId])
+  patientId        String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime? @updatedAt
+
+  @@index([doctorsPatientId])
+  @@index([doctorId])
+  @@index([patientId])
+  @@map("_doctors_patients")
 }
 
 // PRISMA COMMNANDS 
