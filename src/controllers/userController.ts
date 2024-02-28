@@ -558,7 +558,7 @@ export const getUserByRole = asyncHandler(
     res.status(200).json({
       status: "success",
       message: "Users fetched",
-      data: { doctors: users },
+      data: { users: users },
     });
   }
 );
