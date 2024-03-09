@@ -6,6 +6,8 @@
     "OPENAI",
     "SENDGRID",
     "signin",
+    "Tsms",
+    "twofa",
     "webpush"
   ]
 }

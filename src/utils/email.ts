@@ -52,4 +52,23 @@ export class Email {
     );
     await this.sendHtml(html, "Reset Password");
   }
+
+  async sendVerificationToken(
+    token: string,
+    url: string,
+    device: string,
+    firstName: string
+  ) {
+    const html = pug.renderFile(
+      path.join(__dirname, "../views/email/verificationToken.pug"),
+      {
+        subject: "New Device Verification Token",
+        firstName: firstName,
+        verificationURL: url,
+        verificationToken: token,
+        device: device,
+      }
+    );
+    await this.sendHtml(html, "New Device Verification Token");
+  }
 }

@@ -13,17 +13,29 @@ import {
   getUserByRole,
   signInPatient,
   signInDoctor,
+  authenticateMiddleware,
 } from "../controllers/userController";
 import { uploadFile } from "../utils/upload";
+import { sendVerificationToken } from "../controllers/twoFAController";
 
 const router = express.Router();
 
 router.post("/patients/signup", setUserRole, signUp);
 router.post("/doctors/signup", setUserRole, signUp);
 router.post("/admins/signup", setUserRole, signUp);
-router.post("/signin", signIn);
-router.post("/patient/signin", signInPatient);
-router.post("/doctor/signin", signInDoctor);
+router.post("/signin", signIn, sendVerificationToken, authenticateMiddleware);
+router.post(
+  "/patient/signin",
+  signInPatient,
+  sendVerificationToken,
+  authenticateMiddleware
+);
+router.post(
+  "/doctor/signin",
+  signInDoctor,
+  sendVerificationToken,
+  authenticateMiddleware
+);
 router.post("/forgot-password", forgotPassword);
 router.patch("/reset-password/:token", resetPassword);
 router.patch("/edit-user-details/:userId", protect, editUserDetails);
