@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 const SessionDevice = prisma.sessionDevice;
+const TwoFA = prisma.twoFA;
 
 export const sessionDeviceExists = async (
   userId: string,
@@ -121,10 +122,14 @@ export const getSessionDevicesByUser = asyncHandler(
       where: { userId: { equals: userId } },
     });
 
+    const twoFA = await TwoFA.findUnique({
+      where: { userId: userId },
+    });
+
     res.status(200).json({
       status: "success",
       message: "Session devices successfully fetched",
-      data: { sessionDevices: sessionDevices },
+      data: { sessionDevices: sessionDevices, twoFA: twoFA },
     });
   }
 );

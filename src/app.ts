@@ -21,6 +21,7 @@ import { chatHandler } from "./controllers/chatController";
 import { chatRoutes } from "./routes/chatRoutes";
 import { doctorsPatientsRoutes } from "./routes/doctorsPatientRoute";
 import { twoFARoutes } from "./routes/twoFARoutes";
+import { sessionDeviceRoutes } from "./routes/sessionDeviceRoutes";
 
 dotenv.config();
 
@@ -69,6 +70,7 @@ app.use("/api/v1/conferences", videoConferenceRoutes);
 app.use("/api/v1/chat", chatRoutes);
 app.use("/api/v1/doctors-patient", doctorsPatientsRoutes);
 app.use("/api/v1/2fa", twoFARoutes);
+app.use("/api/v1/session-devices", sessionDeviceRoutes);
 
 chatHandler(io);
 videoConferencingController(io);
