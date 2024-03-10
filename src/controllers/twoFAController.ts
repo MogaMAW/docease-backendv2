@@ -245,6 +245,7 @@ export const sendVerificationToken = asyncHandler(
 
     const token = await createOrUpdateVerificationToken(userId);
     let resMessage: string = "";
+    const redirectToPath = "/2fa-verification";
     const sendViaTelPhoneNumber: boolean = phoneNumber.startsWith("256");
 
     if (sendViaTelPhoneNumber) {
@@ -271,9 +272,10 @@ export const sendVerificationToken = asyncHandler(
       );
     }
 
-    res.status(200).json({
+    res.status(302).json({
       status: "success",
       message: resMessage,
+      redirectTo: redirectToPath,
     });
   }
 );
