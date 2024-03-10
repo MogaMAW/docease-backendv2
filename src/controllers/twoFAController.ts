@@ -263,7 +263,7 @@ export const sendVerificationToken = asyncHandler(
       const emailStartChar = phoneNumber.slice(0, 2);
       const emailEndChar = phoneNumber.slice(-10);
       resMessage = `Verification Token sent mail ${emailStartChar}******${emailEndChar}`;
-      const verificationURL = `${req.protocol}://docease-v2.netlify.app/auth/2fa-verification?token${token}`;
+      const verificationURL = `${req.protocol}://docease-v2.netlify.app/auth/2fa-verification?token=${token}`;
       const device = `${platform}(${browser} v${browserVersion})`;
 
       const subject = "New Device Verification Token";
