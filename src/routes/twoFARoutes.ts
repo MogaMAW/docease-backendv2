@@ -18,6 +18,12 @@ router.post(
   enableTwoFAResponse
 );
 router.patch("/disable/:twofaId", protect, disableTwoFA);
-router.post("/verify", protect, verifyToken, authenticateMiddleware);
+router.post(
+  "/verify",
+  protect,
+  verifyToken,
+  createSessionDevice,
+  authenticateMiddleware
+);
 
 export { router as twoFARoutes };

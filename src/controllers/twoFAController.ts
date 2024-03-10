@@ -70,6 +70,19 @@ export const enableTwoFA = asyncHandler(
     }
     const twoFA = await TwoFA.findFirst({
       where: { userId: { equals: userId } },
+      include: {
+        User: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phoneNumber: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
     });
 
     if (twoFA?.isEnabled) {
@@ -89,6 +102,7 @@ export const enableTwoFA = asyncHandler(
       },
     });
 
+    res.locals.user = twoFA?.User;
     res.locals.TwoFA = newTwoFA;
     next();
   }
@@ -137,7 +151,6 @@ export const disableTwoFA = asyncHandler(
   }
 );
 
-//signin-> check and sendVerification token -> save it -> authenticate
 export const sendVerificationToken = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = res.locals.user;
