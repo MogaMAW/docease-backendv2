@@ -272,7 +272,7 @@ export const sendVerificationToken = asyncHandler(
       );
     }
 
-    res.status(302).json({
+    res.status(200).json({
       status: "success",
       message: resMessage,
       redirectTo: redirectToPath,
