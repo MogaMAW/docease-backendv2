@@ -20,7 +20,6 @@ router.post(
 router.patch("/disable/:twofaId", protect, disableTwoFA);
 router.post(
   "/verify",
-  protect,
   verifyToken,
   createSessionDevice,
   authenticateMiddleware
