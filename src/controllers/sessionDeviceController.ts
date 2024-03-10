@@ -128,3 +128,30 @@ export const getSessionDevicesByUser = asyncHandler(
     });
   }
 );
+
+export const deleteSessionDevice = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const sessionDeviceId = req.params.sessionDeviceId as string;
+
+    if (!sessionDeviceId) {
+      return next(new AppError("Please provide sessionDeviceId", 400));
+    }
+
+    const sessionDevice = await SessionDevice.findMany({
+      where: { sessionDeviceId: { equals: sessionDeviceId } },
+    });
+
+    if (!sessionDevice) {
+      return next(
+        new AppError("We couldn't find session device of provided id", 400)
+      );
+    }
+
+    await SessionDevice.delete({ where: { sessionDeviceId: sessionDeviceId } });
+
+    res.status(200).json({
+      status: "success",
+      message: "Session device successfully deleted",
+    });
+  }
+);
