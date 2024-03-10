@@ -70,19 +70,6 @@ export const enableTwoFA = asyncHandler(
     }
     const twoFA = await TwoFA.findFirst({
       where: { userId: { equals: userId } },
-      include: {
-        User: {
-          select: {
-            userId: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            phoneNumber: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
     });
 
     if (twoFA?.isEnabled) {
@@ -99,10 +86,21 @@ export const enableTwoFA = asyncHandler(
         isEnabled: true,
         createdAt: true,
         updatedAt: true,
+        User: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phoneNumber: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 
-    const user = twoFA?.User!;
+    const user = newTwoFA?.User!;
     const phoneNumber = user.phoneNumber!;
     const token = await createOrUpdateVerificationToken(userId);
     let resMessage: string = "";
@@ -128,7 +126,7 @@ export const enableTwoFA = asyncHandler(
       );
     }
 
-    res.locals.user = twoFA?.User;
+    res.locals.user = user;
     res.locals.TwoFA = newTwoFA;
     res.locals.message = resMessage;
     next();
