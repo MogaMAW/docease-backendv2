@@ -72,13 +72,18 @@ export class Email {
     await this.sendHtml(html, "2FA Confirmation Token");
   }
 
-  async send2FAConfirmationToken(token: string, firstName: string) {
+  async send2FAConfirmationToken(
+    token: string,
+    firstName: string,
+    device: string
+  ) {
     const html = pug.renderFile(
       path.join(__dirname, "../views/email/twoFAConfirmationToken.pug"),
       {
         subject: "2FA Confirmation Token",
         firstName: firstName,
         twoFAConfirmationToken: token,
+        device: device,
       }
     );
     await this.sendHtml(html, "2FA Confirmation Token");

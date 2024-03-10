@@ -64,6 +64,9 @@ export const enableTwoFAResponse = asyncHandler(
 export const enableTwoFA = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.body.userId as string;
+    const platform = req.body.platform as string;
+    const browser = req.body.browser as string;
+    const browserVersion = req.body.browserVersion as string;
 
     if (!userId) {
       return next(new AppError("Please provide userId", 400));
@@ -118,11 +121,13 @@ export const enableTwoFA = asyncHandler(
       const emailStartChar = phoneNumber.slice(0, 2);
       const emailEndChar = phoneNumber.slice(-10);
       resMessage = `2FA confirmation Token sent mail ${emailStartChar}******${emailEndChar}`;
+      const device = `${platform}(${browser} v${browserVersion})`;
 
       const subject = "2FA confirmation Token";
       await new Email(user.email, subject).send2FAConfirmationToken(
         token,
-        user.firstName
+        user.firstName,
+        device
       );
     }
 
