@@ -72,7 +72,7 @@ export const enableTwoFA = asyncHandler(
       where: { userId: { equals: userId } },
     });
 
-    if (twoFA) {
+    if (twoFA?.isEnabled) {
       return next(
         new AppError("Two factor authentication is already turned on", 400)
       );
