@@ -61,12 +61,13 @@ model User {
 }
 
 model TwoFA {
-  twofaId   String    @id @default(uuid())
-  User      User      @relation(fields: [userId], references: [userId])
-  userId    String    @unique
-  isEnabled Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  twofaId    String    @id @default(uuid())
+  User       User      @relation(fields: [userId], references: [userId])
+  userId     String    @unique
+  isEnabled  Boolean   @default(false)
+  isVerified Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
 
   @@index([twofaId])
   @@index([userId])

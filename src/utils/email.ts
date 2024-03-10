@@ -69,6 +69,18 @@ export class Email {
         device: device,
       }
     );
-    await this.sendHtml(html, "New Device Verification Token");
+    await this.sendHtml(html, "2FA Confirmation Token");
+  }
+
+  async send2FAConfirmationToken(token: string, firstName: string) {
+    const html = pug.renderFile(
+      path.join(__dirname, "../views/email/twoFAConfirmationToken.pug"),
+      {
+        subject: "2FA Confirmation Token",
+        firstName: firstName,
+        twoFAConfirmationToken: token,
+      }
+    );
+    await this.sendHtml(html, "2FA Confirmation Token");
   }
 }

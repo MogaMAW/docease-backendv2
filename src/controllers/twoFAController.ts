@@ -102,8 +102,35 @@ export const enableTwoFA = asyncHandler(
       },
     });
 
+    const user = twoFA?.User!;
+    const phoneNumber = user.phoneNumber!;
+    const token = await createOrUpdateVerificationToken(userId);
+    let resMessage: string = "";
+    const sendViaTelPhoneNumber: boolean = phoneNumber.startsWith("256");
+
+    if (sendViaTelPhoneNumber) {
+      const phoneNumberStartChar = phoneNumber.slice(0, 5);
+      const phoneNumberEndChar = phoneNumber.slice(-2);
+      resMessage = `2FA confirmation Token sent tel phone ${phoneNumberStartChar}*****${phoneNumberEndChar}`;
+
+      await new SMS(phoneNumber).send2FAConfirmationToken(token);
+    }
+
+    if (!sendViaTelPhoneNumber) {
+      const emailStartChar = phoneNumber.slice(0, 2);
+      const emailEndChar = phoneNumber.slice(-10);
+      resMessage = `2FA confirmation Token sent mail ${emailStartChar}******${emailEndChar}`;
+
+      const subject = "2FA confirmation Token";
+      await new Email(user.email, subject).send2FAConfirmationToken(
+        token,
+        user.firstName
+      );
+    }
+
     res.locals.user = twoFA?.User;
     res.locals.TwoFA = newTwoFA;
+    res.locals.message = resMessage;
     next();
   }
 );
@@ -132,7 +159,7 @@ export const disableTwoFA = asyncHandler(
     }
 
     const updateTwoFA = await TwoFA.update({
-      data: { isEnabled: false },
+      data: { isEnabled: false, isVerified: false },
       where: { twofaId: twofaId },
       select: {
         twofaId: true,
@@ -146,6 +173,51 @@ export const disableTwoFA = asyncHandler(
     res.status(200).json({
       status: "success",
       message: "Two factor authentication successfully turned off",
+      data: { twoFA: updateTwoFA },
+    });
+  }
+);
+
+export const confirm2FAToken = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.body.token as string;
+
+    if (!token) return next(new AppError("Please provide 2FA token", 400));
+    const hashedToken = createHash("sha256").update(token).digest("hex");
+
+    const savedToken = await VerificationToken.findFirst({
+      where: {
+        token: { equals: hashedToken },
+        expiresAt: { gt: new Date(Date.now()).toISOString() },
+      },
+      include: { User: true },
+    });
+
+    if (!savedToken) return next(new AppError("Invalid or expired token", 400));
+
+    await VerificationToken.update({
+      where: { tokenId: savedToken.tokenId },
+      data: { expiresAt: new Date(Date.now()).toISOString() },
+    });
+
+    const userId = savedToken.User.userId;
+
+    const updateTwoFA = await TwoFA.update({
+      data: { isVerified: true },
+      where: { userId: userId },
+      select: {
+        twofaId: true,
+        userId: true,
+        isEnabled: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    res.status(200).json({
+      status: "success",
+      message:
+        "Two factor authentication setup for this account is completed successfully",
       data: { twoFA: updateTwoFA },
     });
   }

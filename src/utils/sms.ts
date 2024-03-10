@@ -45,4 +45,11 @@ export class SMS {
 
     await this.sendSMS(message, ssid);
   }
+
+  async send2FAConfirmationToken(token: string) {
+    const message = `Your 2FA confirmation token is ${token}. Please don't share it with anyone`;
+    const ssid = "Docease";
+
+    await this.sendSMS(message, ssid);
+  }
 }
