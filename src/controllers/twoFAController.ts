@@ -113,7 +113,7 @@ export const enableTwoFA = asyncHandler(
     if (sendViaTelPhoneNumber) {
       const phoneNumberStartChar = phoneNumber.slice(0, 5);
       const phoneNumberEndChar = phoneNumber.slice(-2);
-      resMessage = `2FA confirmation Token sent tel phone ${phoneNumberStartChar}*****${phoneNumberEndChar}`;
+      resMessage = `2FA confirmation Token has been to sent tel phone ${phoneNumberStartChar}*****${phoneNumberEndChar}`;
 
       await new SMS(phoneNumber).send2FAConfirmationToken(token);
     }
@@ -121,7 +121,7 @@ export const enableTwoFA = asyncHandler(
     if (!sendViaTelPhoneNumber) {
       const emailStartChar = email.slice(0, 2);
       const emailEndChar = email.slice(-10);
-      resMessage = `2FA confirmation Token sent mail ${emailStartChar}******${emailEndChar}`;
+      resMessage = `2FA confirmation Token has been to sent mail ${emailStartChar}******${emailEndChar}`;
       const device = `${browser} ${browserVersion} (${platform})`;
 
       const subject = "2FA confirmation Token";
@@ -256,7 +256,7 @@ export const sendVerificationToken = asyncHandler(
     if (sendViaTelPhoneNumber) {
       const phoneNumberStartChar = phoneNumber.slice(0, 5);
       const phoneNumberEndChar = phoneNumber.slice(-2);
-      resMessage = `Verification Token sent to tel phone ${phoneNumberStartChar}*****${phoneNumberEndChar}`;
+      resMessage = `Verification Token has been sent to tel phone ${phoneNumberStartChar}*****${phoneNumberEndChar}`;
 
       await new SMS(phoneNumber).sendVerificationToken(token);
     }
@@ -264,7 +264,7 @@ export const sendVerificationToken = asyncHandler(
     if (!sendViaTelPhoneNumber) {
       const emailStartChar = email.slice(0, 2);
       const emailEndChar = email.slice(-10);
-      resMessage = `Verification Token sent to mail ${emailStartChar}******${emailEndChar}`;
+      resMessage = `Verification Token sent has been to mail ${emailStartChar}******${emailEndChar}`;
       const verificationURL = `${req.protocol}://docease-v2.netlify.app/auth/2fa-verification?token=${token}`;
       const device = `${browser} ${browserVersion} (${platform})`;
 
