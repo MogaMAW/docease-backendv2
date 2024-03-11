@@ -238,7 +238,7 @@ export const sendVerificationToken = asyncHandler(
     const browser = req.body.browser as string;
     const browserVersion = req.body.browserVersion as string;
 
-    const deviceExists = await sessionDeviceExists(
+    const { exists: deviceExists } = await sessionDeviceExists(
       userId,
       platform,
       browser,

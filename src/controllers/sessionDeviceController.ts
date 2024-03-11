@@ -12,7 +12,7 @@ export const sessionDeviceExists = async (
   platform: string,
   browser: string,
   browserVersion: string
-): Promise<boolean> => {
+): Promise<{ exists: boolean; device: any }> => {
   const sessionDevices = await SessionDevice.findMany({
     where: { userId: { equals: userId } },
   });
@@ -21,18 +21,19 @@ export const sessionDeviceExists = async (
   let device: any = {};
 
   sessionDevices.map((sessionDevice) => {
-    const isSamePlatform: boolean = sessionDevice.platform == platform;
-    const isSameBrowser: boolean = sessionDevice.platform == browser;
+    const isSamePlatform: boolean = sessionDevice.platform === platform;
+    const isSameBrowser: boolean = sessionDevice.browser === browser;
     const isSameBrowserVersion: boolean =
-      sessionDevice.platform == browserVersion;
+      sessionDevice.browserVersion === browserVersion;
 
     if (isSamePlatform && isSameBrowser && isSameBrowserVersion) {
       deviceExists = true;
+      device = sessionDevice;
       return;
     }
   });
 
-  return deviceExists;
+  return { exists: deviceExists, device: device };
 };
 
 export const createSessionDevice = asyncHandler(
@@ -45,25 +46,13 @@ export const createSessionDevice = asyncHandler(
     if (!userId) {
       return next(new AppError("Please provide userId", 400));
     }
-    const sessionDevices = await SessionDevice.findMany({
-      where: { userId: { equals: userId } },
-    });
 
-    let deviceExists: boolean = false;
-    let device: any = {};
-
-    sessionDevices.map((sessionDevice) => {
-      const isSamePlatform: boolean = sessionDevice.platform == platform;
-      const isSameBrowser: boolean = sessionDevice.platform == browser;
-      const isSameBrowserVersion: boolean =
-        sessionDevice.platform == browserVersion;
-
-      if (isSamePlatform && isSameBrowser && isSameBrowserVersion) {
-        deviceExists = true;
-        device = sessionDevice;
-        return;
-      }
-    });
+    let { exists: deviceExists, device } = await sessionDeviceExists(
+      userId,
+      platform,
+      browser,
+      browserVersion
+    );
 
     if (!deviceExists) {
       device = await SessionDevice.create({
