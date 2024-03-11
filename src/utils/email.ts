@@ -69,7 +69,7 @@ export class Email {
         device: device,
       }
     );
-    await this.sendHtml(html, "2FA Confirmation Token");
+    await this.sendHtml(html, "New Device Verification Token");
   }
 
   async send2FAConfirmationToken(
