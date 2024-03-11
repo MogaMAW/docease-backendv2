@@ -105,6 +105,7 @@ export const enableTwoFA = asyncHandler(
 
     const user = newTwoFA?.User!;
     const phoneNumber = user.phoneNumber!;
+    const email = user.email!;
     const token = await createOrUpdateVerificationToken(userId);
     let resMessage: string = "";
     const sendViaTelPhoneNumber: boolean = phoneNumber.startsWith("256");
@@ -118,8 +119,8 @@ export const enableTwoFA = asyncHandler(
     }
 
     if (!sendViaTelPhoneNumber) {
-      const emailStartChar = phoneNumber.slice(0, 2);
-      const emailEndChar = phoneNumber.slice(-10);
+      const emailStartChar = email.slice(0, 2);
+      const emailEndChar = email.slice(-10);
       resMessage = `2FA confirmation Token sent mail ${emailStartChar}******${emailEndChar}`;
       const device = `${platform}(${browser} v${browserVersion})`;
 
@@ -231,6 +232,7 @@ export const sendVerificationToken = asyncHandler(
     const user = res.locals.user;
     const userId = user.userId as string;
     const phoneNumber = user.phoneNumber as string;
+    const email = user.email as string;
     const platform = req.body.platform as string;
     const browser = req.body.browser as string;
     const browserVersion = req.body.browserVersion as string;
@@ -260,8 +262,8 @@ export const sendVerificationToken = asyncHandler(
     }
 
     if (!sendViaTelPhoneNumber) {
-      const emailStartChar = phoneNumber.slice(0, 2);
-      const emailEndChar = phoneNumber.slice(-10);
+      const emailStartChar = email.slice(0, 2);
+      const emailEndChar = email.slice(-10);
       resMessage = `Verification Token sent mail ${emailStartChar}******${emailEndChar}`;
       const verificationURL = `${req.protocol}://docease-v2.netlify.app/auth/2fa-verification?token=${token}`;
       const device = `${platform}(${browser} v${browserVersion})`;
