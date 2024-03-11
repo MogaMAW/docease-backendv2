@@ -5,6 +5,7 @@ import {
   disableTwoFA,
   enableTwoFA,
   enableTwoFAResponse,
+  resendEnableTwoFA,
   verifyToken,
 } from "../controllers/twoFAController";
 import { createSessionDevice } from "../controllers/sessionDeviceController";
@@ -15,6 +16,13 @@ router.post(
   "/enable",
   protect,
   enableTwoFA,
+  createSessionDevice,
+  enableTwoFAResponse
+);
+router.post(
+  "/resend-enable",
+  protect,
+  resendEnableTwoFA,
   createSessionDevice,
   enableTwoFAResponse
 );

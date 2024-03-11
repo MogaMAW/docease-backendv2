@@ -214,6 +214,109 @@ export const disableTwoFA = asyncHandler(
   }
 );
 
+export const resendEnableTwoFA = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.body.userId as string;
+    const platform = req.body.platform as string;
+    const browser = req.body.browser as string;
+    const browserVersion = req.body.browserVersion as string;
+
+    if (!userId) {
+      return next(new AppError("Please provide userId", 400));
+    }
+    const twoFA = await TwoFA.findFirst({
+      where: { userId: { equals: userId } },
+    });
+
+    let newTwoFA: any = {};
+
+    if (twoFA) {
+      newTwoFA = await TwoFA.update({
+        data: { isEnabled: true },
+        where: { userId: userId },
+        select: {
+          twofaId: true,
+          userId: true,
+          isEnabled: true,
+          createdAt: true,
+          updatedAt: true,
+          User: {
+            select: {
+              userId: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true,
+              phoneNumber: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      });
+    }
+
+    if (!twoFA) {
+      newTwoFA = await TwoFA.create({
+        data: { userId: userId, isEnabled: true },
+        select: {
+          twofaId: true,
+          userId: true,
+          isEnabled: true,
+          createdAt: true,
+          updatedAt: true,
+          User: {
+            select: {
+              userId: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true,
+              phoneNumber: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      });
+    }
+
+    const user = newTwoFA?.User!;
+    const phoneNumber = user.phoneNumber!;
+    const email = user.email!;
+    const token = await createOrUpdateVerificationToken(userId);
+    let resMessage: string = "";
+    const sendViaTelPhoneNumber: boolean = phoneNumber.startsWith("256");
+
+    if (sendViaTelPhoneNumber) {
+      const phoneNumberStartChar = phoneNumber.slice(0, 5);
+      const phoneNumberEndChar = phoneNumber.slice(-2);
+      resMessage = `2FA confirmation Token has been to sent tel phone ${phoneNumberStartChar}*****${phoneNumberEndChar}`;
+
+      await new SMS(phoneNumber).send2FAConfirmationToken(token);
+    }
+
+    if (!sendViaTelPhoneNumber) {
+      const emailStartChar = email.slice(0, 2);
+      const emailEndChar = email.slice(-10);
+      resMessage = `2FA confirmation Token has been to sent mail ${emailStartChar}******${emailEndChar}`;
+      const device = `${browser} ${browserVersion} (${platform})`;
+
+      const subject = "2FA confirmation Token";
+      await new Email(user.email, subject).send2FAConfirmationToken(
+        token,
+        user.firstName,
+        device
+      );
+    }
+
+    res.locals.user = user;
+    res.locals.TwoFA = newTwoFA;
+    res.locals.message = resMessage;
+    next();
+  }
+);
+
 export const confirm2FAToken = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const token = req.body.token as string;
