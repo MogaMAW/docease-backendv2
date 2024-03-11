@@ -122,7 +122,7 @@ export const enableTwoFA = asyncHandler(
       const emailStartChar = email.slice(0, 2);
       const emailEndChar = email.slice(-10);
       resMessage = `2FA confirmation Token sent mail ${emailStartChar}******${emailEndChar}`;
-      const device = `${platform}(${browser} v${browserVersion})`;
+      const device = `${browser} ${browserVersion} (${platform})`;
 
       const subject = "2FA confirmation Token";
       await new Email(user.email, subject).send2FAConfirmationToken(
@@ -266,7 +266,7 @@ export const sendVerificationToken = asyncHandler(
       const emailEndChar = email.slice(-10);
       resMessage = `Verification Token sent to mail ${emailStartChar}******${emailEndChar}`;
       const verificationURL = `${req.protocol}://docease-v2.netlify.app/auth/2fa-verification?token=${token}`;
-      const device = `${platform}(${browser} v${browserVersion})`;
+      const device = `${browser} ${browserVersion} (${platform})`;
 
       const subject = "New Device Verification Token";
       await new Email(user.email, subject).sendVerificationToken(
