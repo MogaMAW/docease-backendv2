@@ -1,0 +1,12 @@
+extends baseEmail
+
+block content
+  p Hi #{firstName},
+  p You are in the process of setting up Two Factor Authentication(2FA) for your account on the device #{device}.
+  p Please use 2FA Confirmation Token below to complete the process .
+  p
+    |  2FA Confirmation Token: 
+    strong #{twoFAConfirmationToken}.
+  p Note that this token is valid for 10 minutes. After the time limit has expired, you will have to resubmit the request for another one.
+
+  p If you did not make this request, please contact Support and ignore this email!

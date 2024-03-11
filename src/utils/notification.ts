@@ -5,6 +5,7 @@ import { firebaseAdmin } from "../config/firebaseAdmin";
 class Notification {
   private notificationEventEmitter: EventEmitter;
   private confNotificationEventEmitter: EventEmitter;
+  private chatEventEmitter: EventEmitter;
   private firebaseMessaging: any;
 
   constructor() {
@@ -12,6 +13,8 @@ class Notification {
     this.notificationEventEmitter.setMaxListeners(50);
     this.confNotificationEventEmitter = new EventEmitter();
     this.confNotificationEventEmitter.setMaxListeners(50);
+    this.chatEventEmitter = new EventEmitter();
+    this.chatEventEmitter.setMaxListeners(50);
     this.firebaseMessaging = firebaseAdmin.messaging();
   }
 
@@ -23,12 +26,20 @@ class Notification {
     return this.notificationEventEmitter;
   }
 
+  listenConfNotificationEvent() {
+    return this.confNotificationEventEmitter;
+  }
+
   emitConfNotificationEvent(message: TConfNotification) {
     this.confNotificationEventEmitter.emit("conferenceNotification", message);
   }
 
-  listenConfNotificationEvent() {
-    return this.confNotificationEventEmitter;
+  emitChatEvent(message: any) {
+    this.chatEventEmitter.emit("chat", message);
+  }
+
+  listenChatEvent() {
+    return this.chatEventEmitter;
   }
 
   async sendPushNotification(notification: TNotification) {

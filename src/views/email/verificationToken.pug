@@ -1,0 +1,21 @@
+extends baseEmail
+
+block content
+  p Hi #{firstName},
+  p A new device #{device} is trying to log into your account.
+  p You can use verification token or click the button below to verify login.
+  p
+    | Verification token: 
+    strong #{verificationToken}.
+  p Note that this verification token is valid for 10 minutes. After the time limit has expired, you will have to resubmit the request for another token.
+
+  table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+    tbody
+      tr
+        td(align='left')
+          table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+            tbody
+              tr
+                td
+                  a(href=`${verificationURL}`, target='_blank') Verify Device
+  p If you did not make this request, please contact Support and ignore this email!

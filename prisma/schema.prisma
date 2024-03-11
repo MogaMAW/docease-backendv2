@@ -19,22 +19,22 @@ enum Gender {
 }
 
 model User {
-  userId                 String            @id @default(uuid())
-  firstName              String            @db.Text
-  lastName               String            @db.Text
-  email                  String            @unique @db.Text
+  userId                 String              @id @default(uuid())
+  firstName              String              @db.Text
+  lastName               String              @db.Text
+  email                  String              @unique @db.Text
   phoneNumber            String
   gender                 Gender
-  role                   Role              @default(patient)
-  password               String            @db.Text
-  imageUrl               String?           @db.Text
-  imagePath              String?           @db.Text
-  passwordResetToken     String?           @db.Text
+  role                   Role                @default(patient)
+  password               String              @db.Text
+  imageUrl               String?             @db.Text
+  imagePath              String?             @db.Text
+  passwordResetToken     String?             @db.Text
   passwordResetExpiresAt DateTime?
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime?         @updatedAt
-  patient                Appointment[]     @relation("patient")
-  doctor                 Appointment[]     @relation("doctor")
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime?           @updatedAt
+  patient                Appointment[]       @relation("patient")
+  doctor                 Appointment[]       @relation("doctor")
   accessTokens           AccessToken[]
   schedule               Schedule[]
   medicalFile            MedicalFile[]
@@ -43,18 +43,50 @@ model User {
   notification           Notification[]
   onlineStatus           OnlineStatus?
   userDevice             Device[]
-  host                   VideoConference[] @relation("host")
-  attendee               VideoConference[] @relation("attendee")
-  sender                 Chat[]            @relation("sender")
-  recipient              Chat[]            @relation("recipient")
-  doctorsPatientDoctor   DoctorsPatient[]  @relation("doctor")
-  doctorsPatientPatient  DoctorsPatient[]  @relation("patient")
+  host                   VideoConference[]   @relation("host")
+  attendee               VideoConference[]   @relation("attendee")
+  sender                 Chat[]              @relation("sender")
+  recipient              Chat[]              @relation("recipient")
+  doctorsPatientDoctor   DoctorsPatient[]    @relation("doctor")
+  doctorsPatientPatient  DoctorsPatient[]    @relation("patient")
+  twoFA                  TwoFA?
+  sessionDevice          SessionDevice[]
+  verificationToken      VerificationToken[]
 
   @@index([userId])
   @@index([email])
   @@index([role])
   @@index([passwordResetToken])
   @@map("_users")
+}
+
+model TwoFA {
+  twofaId    String    @id @default(uuid())
+  User       User      @relation(fields: [userId], references: [userId])
+  userId     String    @unique
+  isEnabled  Boolean   @default(false)
+  isVerified Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@index([twofaId])
+  @@index([userId])
+  @@map("_two_fa")
+}
+
+model SessionDevice {
+  sessionDeviceId String    @id @default(uuid())
+  User            User      @relation(fields: [userId], references: [userId])
+  userId          String
+  platform        String
+  browser         String
+  browserVersion  String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @updatedAt
+
+  @@index([sessionDeviceId])
+  @@index([userId])
+  @@map("_session_devices")
 }
 
 model AccessToken {
@@ -69,6 +101,20 @@ model AccessToken {
   @@index([userId])
   @@index([token])
   @@map("_access_tokens")
+}
+
+model VerificationToken {
+  tokenId   String    @id @default(uuid())
+  User      User      @relation(fields: [userId], references: [userId])
+  userId    String
+  token     String    @db.Text
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([userId])
+  @@index([token])
+  @@map("_verification_tokens")
 }
 
 model OnlineStatus {

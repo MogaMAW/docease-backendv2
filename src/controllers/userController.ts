@@ -31,7 +31,7 @@ const saveAccessToken = async (userId: string, accessToken: string) => {
   });
 };
 
-const authenticate = async (
+export const authenticate = async (
   user: any,
   statusCode: number,
   res: Response
@@ -86,6 +86,17 @@ export const setUserRole = asyncHandler(
     }
 
     next();
+  }
+);
+
+export const authenticateMiddleware = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = res.locals.user;
+
+    if (!user) {
+      return next(new AppError("Please provide user data", 400));
+    }
+    authenticate(user, 200, res);
   }
 );
 
@@ -146,11 +157,19 @@ export const signIn = asyncHandler(
     }
     const user = await User.findFirst({
       where: { email: { equals: email } },
+      include: { twoFA: true },
     });
 
     if (!user || !(await compare(password, user.password))) {
       return next(new AppError("Wrong email or password", 400));
     }
+
+    if (user.twoFA?.isEnabled) {
+      res.locals.user = user;
+      next();
+      return;
+    }
+
     authenticate(user, 200, res);
   }
 );
@@ -165,6 +184,7 @@ export const signInDoctor = asyncHandler(
     }
     const user = await User.findFirst({
       where: { email: { equals: email } },
+      include: { twoFA: true },
     });
 
     if (user?.role !== "doctor") {
@@ -179,6 +199,13 @@ export const signInDoctor = asyncHandler(
     if (!user || !(await compare(password, user.password))) {
       return next(new AppError("Wrong email or password", 400));
     }
+
+    if (user.twoFA?.isEnabled) {
+      res.locals.user = user;
+      next();
+      return;
+    }
+
     authenticate(user, 200, res);
   }
 );
@@ -193,6 +220,7 @@ export const signInPatient = asyncHandler(
     }
     const user = await User.findFirst({
       where: { email: { equals: email } },
+      include: { twoFA: true },
     });
 
     if (user?.role !== "patient") {
@@ -207,6 +235,13 @@ export const signInPatient = asyncHandler(
     if (!user || !(await compare(password, user.password))) {
       return next(new AppError("Wrong email or password", 400));
     }
+
+    if (user.twoFA?.isEnabled) {
+      res.locals.user = user;
+      next();
+      return;
+    }
+
     authenticate(user, 200, res);
   }
 );
@@ -558,7 +593,7 @@ export const getUserByRole = asyncHandler(
     res.status(200).json({
       status: "success",
       message: "Users fetched",
-      data: { doctors: users },
+      data: { users: users },
     });
   }
 );

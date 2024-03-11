@@ -52,4 +52,40 @@ export class Email {
     );
     await this.sendHtml(html, "Reset Password");
   }
+
+  async sendVerificationToken(
+    token: string,
+    url: string,
+    device: string,
+    firstName: string
+  ) {
+    const html = pug.renderFile(
+      path.join(__dirname, "../views/email/verificationToken.pug"),
+      {
+        subject: "New Device Verification Token",
+        firstName: firstName,
+        verificationURL: url,
+        verificationToken: token,
+        device: device,
+      }
+    );
+    await this.sendHtml(html, "New Device Verification Token");
+  }
+
+  async send2FAConfirmationToken(
+    token: string,
+    firstName: string,
+    device: string
+  ) {
+    const html = pug.renderFile(
+      path.join(__dirname, "../views/email/twoFAConfirmationToken.pug"),
+      {
+        subject: "2FA Confirmation Token",
+        firstName: firstName,
+        twoFAConfirmationToken: token,
+        device: device,
+      }
+    );
+    await this.sendHtml(html, "2FA Confirmation Token");
+  }
 }
