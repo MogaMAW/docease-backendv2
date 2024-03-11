@@ -49,10 +49,11 @@ export const enableTwoFAResponse = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const device = res.locals.device;
     const twoFA = res.locals.TwoFA;
+    const message = res.locals.message as string;
 
     res.status(200).json({
       status: "success",
-      message: "Two factor authentication turned on successfully",
+      message: message,
       data: {
         device: device,
         twoFA: twoFA,
@@ -81,28 +82,58 @@ export const enableTwoFA = asyncHandler(
       );
     }
 
-    const newTwoFA = await TwoFA.create({
-      data: { userId: userId, isEnabled: true },
-      select: {
-        twofaId: true,
-        userId: true,
-        isEnabled: true,
-        createdAt: true,
-        updatedAt: true,
-        User: {
-          select: {
-            userId: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            role: true,
-            phoneNumber: true,
-            createdAt: true,
-            updatedAt: true,
+    let newTwoFA: any = {};
+
+    if (twoFA) {
+      newTwoFA = await TwoFA.update({
+        data: { isEnabled: true },
+        where: { userId: userId },
+        select: {
+          twofaId: true,
+          userId: true,
+          isEnabled: true,
+          createdAt: true,
+          updatedAt: true,
+          User: {
+            select: {
+              userId: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true,
+              phoneNumber: true,
+              createdAt: true,
+              updatedAt: true,
+            },
           },
         },
-      },
-    });
+      });
+    }
+
+    if (!twoFA) {
+      newTwoFA = await TwoFA.create({
+        data: { userId: userId, isEnabled: true },
+        select: {
+          twofaId: true,
+          userId: true,
+          isEnabled: true,
+          createdAt: true,
+          updatedAt: true,
+          User: {
+            select: {
+              userId: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true,
+              phoneNumber: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      });
+    }
 
     const user = newTwoFA?.User!;
     const phoneNumber = user.phoneNumber!;
