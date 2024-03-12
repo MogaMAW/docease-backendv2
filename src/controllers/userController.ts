@@ -164,7 +164,7 @@ export const signIn = asyncHandler(
       return next(new AppError("Wrong email or password", 400));
     }
 
-    if (user.twoFA?.isEnabled) {
+    if (user.twoFA?.isEnabled && user.twoFA?.isVerified) {
       res.locals.user = user;
       next();
       return;
@@ -200,7 +200,7 @@ export const signInDoctor = asyncHandler(
       return next(new AppError("Wrong email or password", 400));
     }
 
-    if (user.twoFA?.isEnabled) {
+    if (user.twoFA?.isEnabled && user.twoFA?.isVerified) {
       res.locals.user = user;
       next();
       return;
@@ -236,7 +236,7 @@ export const signInPatient = asyncHandler(
       return next(new AppError("Wrong email or password", 400));
     }
 
-    if (user.twoFA?.isEnabled) {
+    if (user.twoFA?.isEnabled && user.twoFA?.isVerified) {
       res.locals.user = user;
       next();
       return;
