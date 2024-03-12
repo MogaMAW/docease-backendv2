@@ -21,11 +21,16 @@ export const postDevice = asyncHandler(
     }
 
     const device = await Device.findFirst({
-      where: { deviceToken: { equals: deviceToken } },
+      where: {
+        deviceToken: { equals: deviceToken },
+        userId: { equals: userId },
+      },
     });
 
     if (device) {
-      return next(new AppError("Device token already added", 400));
+      return next(
+        new AppError("Device token already added for this account", 400)
+      );
     }
 
     const newDevice = await Device.create({

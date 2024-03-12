@@ -297,7 +297,7 @@ model Device {
   deviceId       String    @id @default(uuid())
   User           User      @relation(fields: [userId], references: [userId])
   userId         String
-  deviceToken    String    @unique @db.Text
+  deviceToken    String
   devicePlatform String
   isDisable      Boolean   @default(false)
   createdAt      DateTime  @default(now())
