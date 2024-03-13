@@ -62,12 +62,12 @@ export const getLiveChat = asyncHandler(
           recipientId,
         })}\n\n`
       );
-      res.write(
-        `data: ${JSON.stringify({
-          message: "chat",
-          userId: message.recipientId,
-        })}\n\n`
-      );
+      // res.write(
+      //   `data: ${JSON.stringify({
+      //     message: "chat",
+      //     userId: message.recipientId,
+      //   })}\n\n`
+      // );
     });
 
     req.on("close", () => {
