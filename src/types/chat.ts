@@ -1,3 +1,5 @@
+import { TUser } from "./user";
+
 export type TFile = {
   url: string;
   path: string;
@@ -14,4 +16,13 @@ export type TChatMessage = {
   isDelivered: boolean;
   createdAt: Date;
   updatedAt?: Date;
+};
+
+export type TChatExtended = TChatMessage & {
+  sender: TUser;
+  recipient: TUser;
+};
+
+export type TChatRecipient = TUser & {
+  messages: TChatMessage[];
 };

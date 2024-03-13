@@ -4,7 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { PrismaClient } from "@prisma/client";
 import { Socket } from "socket.io";
 import { notification } from "../utils/notification";
-import { TChatMessage } from "../types/chat";
+import { TChatExtended, TChatMessage, TChatRecipient } from "../types/chat";
 
 const prisma = new PrismaClient();
 const Chat = prisma.chat;
@@ -76,33 +76,142 @@ export const getLiveChat = asyncHandler(
   }
 );
 
-export const getChatRecipients = asyncHandler(async (req, res, next) => {
-  const userId = req.params.userId;
+const organizeChatRecipients = (
+  currentUserId: string,
+  chats: TChatExtended[]
+): TChatRecipient[] => {
+  const recipients: TChatRecipient[] = [];
 
-  if (!userId) return next(new AppError("No userId if provided", 400));
+  chats.map((chat) => {
+    let recipientId: string;
 
-  const recipients = await User.findMany({
-    where: {
-      userId: { not: userId },
-    },
-    select: {
-      userId: true,
-      phoneNumber: true,
-      firstName: true,
-      lastName: true,
-      imageUrl: true,
-      role: true,
-      updatedAt: true,
-      createdAt: true,
-    },
+    // Determine the current recipientId
+    if (currentUserId === chat.recipient.userId) {
+      recipientId = chat.sender.userId;
+    } else {
+      recipientId = chat.recipient.userId;
+    }
+
+    const recipient = recipients.find((recipient) => {
+      return recipientId === recipient.userId;
+    });
+    if (recipient) return;
+
+    const recipientObject: TChatRecipient = {
+      userId: "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      gender: "male",
+      role: "patient",
+      imageUrl: "",
+      messages: [],
+    };
+
+    const messages: TChatMessage[] = [];
+
+    // Capture messages and user details of current recipient
+    chats.map((chat) => {
+      const isRecipient: boolean = recipientId === chat.recipientId;
+      const isSender: boolean = recipientId === chat.senderId;
+
+      if (isRecipient) {
+        const user = chat.recipient;
+        recipientObject.userId = user.userId;
+        recipientObject.firstName = user.firstName;
+        recipientObject.lastName = user.lastName;
+        recipientObject.email = user.email;
+        recipientObject.role = user.role;
+        recipientObject.gender = user.gender;
+        recipientObject.imageUrl = user.imageUrl;
+
+        messages.push({
+          messageId: chat.messageId,
+          chatRoomId: chat.chatRoomId,
+          senderId: chat.senderId,
+          recipientId: chat.recipientId,
+          message: chat.message,
+          isRead: chat.isRead,
+          isDelivered: chat.isDelivered,
+          createdAt: chat.createdAt,
+          updatedAt: chat.updatedAt,
+        });
+      }
+      if (isSender) {
+        const user = chat.sender;
+        recipientObject.userId = user.userId;
+        recipientObject.firstName = user.firstName;
+        recipientObject.lastName = user.lastName;
+        recipientObject.email = user.email;
+        recipientObject.role = user.role;
+        recipientObject.gender = user.gender;
+        recipientObject.imageUrl = user.imageUrl;
+
+        messages.push({
+          messageId: chat.messageId,
+          chatRoomId: chat.chatRoomId,
+          senderId: chat.senderId,
+          recipientId: chat.recipientId,
+          message: chat.message,
+          isRead: chat.isRead,
+          isDelivered: chat.isDelivered,
+          createdAt: chat.createdAt,
+          updatedAt: chat.updatedAt,
+        });
+      }
+    });
+
+    recipientObject.messages = messages;
+    recipients.push(recipientObject);
   });
+
+  return recipients;
+};
+
+export const getChatRecipients = asyncHandler(async (req, res, next) => {
+  const userId = req.query.userId as string;
+
+  if (!userId) return next(new AppError("No userId is provided", 400));
+
+  const chats = (await Chat.findMany({
+    where: {
+      OR: [
+        { senderId: { equals: userId } },
+        { recipientId: { equals: userId } },
+      ],
+    },
+    include: {
+      sender: {
+        select: {
+          userId: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: true,
+          gender: true,
+          imageUrl: true,
+        },
+      },
+      recipient: {
+        select: {
+          userId: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: true,
+          gender: true,
+          imageUrl: true,
+        },
+      },
+    },
+  })) as TChatExtended[];
+
+  const recipients: TChatRecipient[] = organizeChatRecipients(userId, chats);
 
   res.status(200).json({
     status: "success",
     message: "Recipients fetched successfully",
-    data: {
-      recipients: recipients,
-    },
+    data: { recipients: recipients },
   });
 });
 
