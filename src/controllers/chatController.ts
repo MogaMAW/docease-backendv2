@@ -13,9 +13,20 @@ const User = prisma.user;
 export const postChat = asyncHandler(async (req, res, next) => {
   const chatMessage = await Chat.create({
     data: req.body,
+    select: {
+      messageId: true,
+      senderId: true,
+      recipientId: true,
+      chatRoomId: true,
+      message: true,
+      isDelivered: true,
+      isRead: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 
-  notification.emitChatEvent(req.body);
+  notification.emitChatEvent(chatMessage);
 
   res.status(200).json({
     status: "success",
