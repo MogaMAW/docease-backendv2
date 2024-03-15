@@ -11,10 +11,6 @@ const Chat = prisma.chat;
 const User = prisma.user;
 
 export const postChat = asyncHandler(async (req, res, next) => {
-  const userId = req.params.userId;
-
-  if (!userId) return next(new AppError("No userId if provided", 400));
-
   const chatMessage = await Chat.create({
     data: req.body,
   });
@@ -81,6 +77,8 @@ const organizeChatRecipients = (
   chats: TChatExtended[]
 ): TChatRecipient[] => {
   const recipients: TChatRecipient[] = [];
+
+  if (!chats[0]) return recipients;
 
   chats.map((chat) => {
     let recipientId: string;
@@ -207,6 +205,8 @@ export const getChatRecipients = asyncHandler(async (req, res, next) => {
   })) as TChatExtended[];
 
   const recipients: TChatRecipient[] = organizeChatRecipients(userId, chats);
+
+  console.log("recipients===>:::", recipients);
 
   res.status(200).json({
     status: "success",
