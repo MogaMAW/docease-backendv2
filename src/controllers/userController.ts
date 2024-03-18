@@ -139,6 +139,7 @@ export const signUp = asyncHandler(
         lastName: true,
         phoneNumber: true,
         role: true,
+        gender: true,
         imageUrl: true,
       },
     });
