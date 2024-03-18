@@ -543,6 +543,7 @@ export const getUser = asyncHandler(
         firstName: true,
         lastName: true,
         role: true,
+        gender: true,
         imageUrl: true,
         createdAt: true,
         updatedAt: true,
