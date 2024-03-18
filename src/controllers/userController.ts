@@ -139,6 +139,7 @@ export const signUp = asyncHandler(
         lastName: true,
         phoneNumber: true,
         role: true,
+        gender: true,
         imageUrl: true,
       },
     });
@@ -543,6 +544,7 @@ export const getUser = asyncHandler(
         firstName: true,
         lastName: true,
         role: true,
+        gender: true,
         imageUrl: true,
         createdAt: true,
         updatedAt: true,
