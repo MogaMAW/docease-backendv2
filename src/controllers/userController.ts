@@ -599,3 +599,110 @@ export const getUserByRole = asyncHandler(
     });
   }
 );
+
+export const getDoctorStatistics = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const doctorId = req.query.doctorId as string;
+
+    if (!doctorId) {
+      return next(new AppError("Please provide doctorId", 400));
+    }
+
+    const minusOneWeekDate = new Date(
+      Date.now() - 1000 * 60 * 60 * 24 * 7
+    ).toISOString();
+
+    const queryStartTime = new Date();
+
+    const userStats = await User.findFirst({
+      where: { userId: { equals: doctorId } },
+      select: {
+        _count: {
+          select: {
+            // My patients count
+            doctorsPatientDoctor: {
+              where: { doctorId: doctorId },
+            },
+            // New patients count
+            doctorsPatientPatient: {
+              where: {
+                AND: [
+                  { doctorId: doctorId },
+                  { createdAt: { gt: minusOneWeekDate } },
+                ],
+              },
+            },
+            // Unread notifications count
+            notification: {
+              where: {
+                AND: [{ userId: doctorId }, { isRead: false }],
+              },
+            },
+            // Unread messages count
+            recipient: {
+              where: {
+                OR: [{ senderId: doctorId }, { recipientId: doctorId }],
+                AND: [{ isRead: false }],
+              },
+            },
+          },
+        },
+        // My recent patients list
+        doctorsPatientDoctor: {
+          where: { doctorId: doctorId },
+          select: {
+            Patient: {
+              select: {
+                userId: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                gender: true,
+                role: true,
+                imageUrl: true,
+                createdAt: true,
+                updatedAt: true,
+                accessTokens: {
+                  select: { createdAt: true },
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        },
+        doctor: {
+          where: {
+            AND: [
+              { doctorId: { equals: doctorId } },
+              { startsAt: { gt: new Date(Date.now()).toISOString() } },
+            ],
+          },
+          include: { statuses: true },
+          orderBy: { startsAt: "desc" },
+          take: 10,
+        },
+      },
+    });
+
+    const queryEndTime = new Date();
+    const elapsedTime = queryEndTime.getTime() - queryStartTime.getTime();
+    console.log(`Query Execution Time: ${elapsedTime} milliseconds`);
+
+    const statistics: any = {};
+    statistics.myPatientCount = userStats?._count.doctorsPatientDoctor;
+    statistics.newPatientCount = userStats?._count.doctorsPatientPatient;
+    statistics.unReadNotificationCount = userStats?._count.notification;
+    statistics.unReadMessageCount = userStats?._count.recipient;
+    statistics.recentPatients = userStats?.doctorsPatientDoctor;
+    statistics.upcomingAppointments = userStats?.doctor;
+
+    res.status(200).json({
+      status: "success",
+      message: "Statistics fetched",
+      data: { statistics: statistics },
+    });
+  }
+);

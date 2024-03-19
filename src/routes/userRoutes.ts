@@ -14,6 +14,8 @@ import {
   signInPatient,
   signInDoctor,
   authenticateMiddleware,
+  getDoctorStatistics,
+  protectDoctor,
 } from "../controllers/userController";
 import { uploadFile } from "../utils/upload";
 import { sendVerificationToken } from "../controllers/twoFAController";
@@ -48,5 +50,6 @@ router.patch(
 router.patch("/change-password/:userId", protect, changePassword);
 router.get("/get-user/:userId", protect, getUser);
 router.get("/get-user-by-role", protect, getUserByRole);
+router.get("/get-stats-by-doctor", protectDoctor, getDoctorStatistics);
 
 export { router as userRoutes };
