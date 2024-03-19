@@ -16,6 +16,7 @@ import {
   authenticateMiddleware,
   getDoctorStatistics,
   protectDoctor,
+  getPatientStatistics,
 } from "../controllers/userController";
 import { uploadFile } from "../utils/upload";
 import { sendVerificationToken } from "../controllers/twoFAController";
@@ -55,5 +56,6 @@ router.get(
   protectDoctor,
   getDoctorStatistics
 );
+router.get("/get-stats-by-patient/:patientId", protect, getPatientStatistics);
 
 export { router as userRoutes };
