@@ -602,7 +602,7 @@ export const getUserByRole = asyncHandler(
 
 export const getDoctorStatistics = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const doctorId = req.query.doctorId as string;
+    const doctorId = req.params.doctorId;
 
     if (!doctorId) {
       return next(new AppError("Please provide doctorId", 400));

@@ -50,6 +50,10 @@ router.patch(
 router.patch("/change-password/:userId", protect, changePassword);
 router.get("/get-user/:userId", protect, getUser);
 router.get("/get-user-by-role", protect, getUserByRole);
-router.get("/get-stats-by-doctor", protectDoctor, getDoctorStatistics);
+router.get(
+  "/get-stats-by-doctor/:doctorId",
+  protectDoctor,
+  getDoctorStatistics
+);
 
 export { router as userRoutes };
