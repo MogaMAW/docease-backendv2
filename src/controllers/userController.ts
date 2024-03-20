@@ -672,6 +672,7 @@ export const getDoctorStatistics = asyncHandler(
           orderBy: { createdAt: "desc" },
           take: 5,
         },
+        // Appointments
         doctor: {
           where: {
             AND: [
@@ -679,7 +680,25 @@ export const getDoctorStatistics = asyncHandler(
               { startsAt: { gt: new Date(Date.now()).toISOString() } },
             ],
           },
-          include: { statuses: true },
+          include: {
+            patient: {
+              select: {
+                userId: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                gender: true,
+                role: true,
+                imageUrl: true,
+                accessTokens: {
+                  select: { createdAt: true },
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                },
+              },
+            },
+            statuses: true,
+          },
           orderBy: { startsAt: "desc" },
           take: 10,
         },
@@ -761,6 +780,7 @@ export const getPatientStatistics = asyncHandler(
           orderBy: { createdAt: "desc" },
           take: 5,
         },
+        // Appointments
         patient: {
           where: {
             AND: [
@@ -768,7 +788,25 @@ export const getPatientStatistics = asyncHandler(
               { startsAt: { gt: new Date(Date.now()).toISOString() } },
             ],
           },
-          include: { statuses: true },
+          include: {
+            doctor: {
+              select: {
+                userId: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                gender: true,
+                role: true,
+                imageUrl: true,
+                accessTokens: {
+                  select: { createdAt: true },
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                },
+              },
+            },
+            statuses: true,
+          },
           orderBy: { startsAt: "desc" },
           take: 10,
         },
