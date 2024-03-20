@@ -672,6 +672,7 @@ export const getDoctorStatistics = asyncHandler(
           orderBy: { createdAt: "desc" },
           take: 5,
         },
+        // Appointments
         doctor: {
           where: {
             AND: [
@@ -679,7 +680,25 @@ export const getDoctorStatistics = asyncHandler(
               { startsAt: { gt: new Date(Date.now()).toISOString() } },
             ],
           },
-          include: { statuses: true },
+          include: {
+            patient: {
+              select: {
+                userId: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                gender: true,
+                role: true,
+                imageUrl: true,
+                accessTokens: {
+                  select: { createdAt: true },
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                },
+              },
+            },
+            statuses: true,
+          },
           orderBy: { startsAt: "desc" },
           take: 10,
         },
@@ -721,6 +740,14 @@ export const getPatientStatistics = asyncHandler(
       select: {
         _count: {
           select: {
+            // Medical Files
+            medicalFile: {
+              where: { userId: patientId },
+            },
+            // Mental health assessments
+            mentalHealth: {
+              where: { userId: patientId },
+            },
             // Unread notifications count
             notification: {
               where: {
@@ -761,6 +788,7 @@ export const getPatientStatistics = asyncHandler(
           orderBy: { createdAt: "desc" },
           take: 5,
         },
+        // Appointments
         patient: {
           where: {
             AND: [
@@ -768,8 +796,26 @@ export const getPatientStatistics = asyncHandler(
               { startsAt: { gt: new Date(Date.now()).toISOString() } },
             ],
           },
-          include: { statuses: true },
-          orderBy: { startsAt: "desc" },
+          include: {
+            doctor: {
+              select: {
+                userId: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                gender: true,
+                role: true,
+                imageUrl: true,
+                accessTokens: {
+                  select: { createdAt: true },
+                  orderBy: { createdAt: "desc" },
+                  take: 1,
+                },
+              },
+            },
+            statuses: true,
+          },
+          orderBy: { startsAt: "asc" },
           take: 10,
         },
       },
@@ -780,6 +826,8 @@ export const getPatientStatistics = asyncHandler(
     console.log(`Query Execution Time: ${elapsedTime} milliseconds`);
 
     const statistics: any = {};
+    statistics.medicalFileCount = userStats?._count.medicalFile;
+    statistics.mentalHealthAssessmentCount = userStats?._count.mentalHealth;
     statistics.unReadNotificationCount = userStats?._count.notification;
     statistics.unReadMessageCount = userStats?._count.recipient;
     statistics.recentDoctors = userStats?.doctorsPatientPatient;
