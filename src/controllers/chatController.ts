@@ -28,6 +28,8 @@ export const postChat = asyncHandler(async (req, res, next) => {
 
   notification.emitChatEvent(chatMessage);
 
+  // await createDoctorsPatient(doctorId, patientId);
+
   res.status(200).json({
     status: "success",
     message: "chat created",

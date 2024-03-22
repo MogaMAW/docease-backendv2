@@ -625,6 +625,7 @@ export const getDoctorStatistics = asyncHandler(
             },
             // New patients count
             doctorsPatientPatient: {
+              //TODO: Ensure this count is working well
               where: {
                 AND: [
                   { doctorId: doctorId },
