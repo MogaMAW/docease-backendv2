@@ -44,6 +44,7 @@ const sendSSENotificationToOneClient = async (
 ) => {
   const res = clientResponseMap.get(userId);
   if (!res) return;
+  const isRead: boolean = false;
 
   res.write(
     `data: ${JSON.stringify({
@@ -52,6 +53,7 @@ const sendSSENotificationToOneClient = async (
       link,
       message,
       userId,
+      isRead,
     })}\n\n`
   );
 };
