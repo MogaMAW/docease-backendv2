@@ -109,6 +109,7 @@ export const postAppointment = asyncHandler(
       message: "New appointment from patient",
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "New appointment from patient",
+      link: `/appointments?id=${newAppointment.appointmentId}`,
     });
 
     res.status(201).json({
@@ -192,6 +193,7 @@ export const updateAppointment = asyncHandler(
       message: "Patient has edited appointment schedule",
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "Patient has edited appointment schedule",
+      link: `/appointments?id=${updatedAppointment.appointmentId}`,
     });
 
     res.status(200).json({
@@ -484,6 +486,7 @@ export const rescheduleAppointment = asyncHandler(
       message: "Doctor has rescheduled your appointment",
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "Doctor has rescheduled your appointment",
+      link: `/appointments?id=${updatedAppointment.appointmentId}`,
     });
 
     res.status(200).json({
@@ -538,6 +541,7 @@ export const approveAppointment = asyncHandler(
       message: "Doctor has approved your appointment",
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "Doctor has approved your appointment",
+      link: `/appointments?id=${appointment.appointmentId}`,
     });
 
     res.status(200).json({
@@ -605,6 +609,7 @@ export const cancelAppointment = asyncHandler(
       message: "Doctor has cancelled your appointment",
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "Doctor has cancelled your appointment",
+      link: `/appointments?id=${appointment.appointmentId}`,
     });
 
     res.status(200).json({

@@ -10,25 +10,50 @@ const Notification = prisma.notification;
 const Device = prisma.device;
 const User = prisma.user;
 
-const saveNotification = async (notificationMsg: TNotification) => {
-  await Notification.create({
-    data: {
-      userId: notificationMsg.userId,
-      message: notificationMsg.message,
-    },
-  });
+// Saves notification in db and returns its id and createdAt
+const saveNotification = (notificationMsg: TNotification) => {
+  let notificationId: string = "";
+  let createdAt: Date = new Date();
+
+  const saveNotificationInDb = async () => {
+    const notification = await Notification.create({
+      data: {
+        userId: notificationMsg.userId,
+        message: notificationMsg.message,
+        link: notificationMsg.link,
+      },
+      select: { notificationId: true, createdAt: true },
+    });
+
+    notificationId = notification.notificationId;
+    createdAt = notification.createdAt;
+  };
+  saveNotificationInDb();
+
+  return { notificationId: notificationId, createdAt: createdAt };
 };
 
 const clientResponseMap = new Map<string, Response>();
 
 const sendSSENotificationToOneClient = async (
   userId: string,
-  message: string
+  message: string,
+  notificationId: string,
+  createdAt: Date,
+  link: string
 ) => {
   const res = clientResponseMap.get(userId);
   if (!res) return;
 
-  res.write(`data: ${JSON.stringify({ message, userId })}\n\n`);
+  res.write(
+    `data: ${JSON.stringify({
+      notificationId,
+      createdAt,
+      link,
+      message,
+      userId,
+    })}\n\n`
+  );
 };
 
 const sendPushNotification = async (notificationMsg: TNotification) => {
@@ -77,12 +102,15 @@ export const getLiveNotifications = asyncHandler(
     notification
       .listenNotificationEvent()
       .on("notification", (notificationMsg: TNotification) => {
-        saveNotification(notificationMsg);
+        const { notificationId, createdAt } = saveNotification(notificationMsg);
 
         if (notificationMsg.userId !== userId) return;
         sendSSENotificationToOneClient(
           notificationMsg.userId,
-          notificationMsg.message
+          notificationMsg.message,
+          notificationId,
+          createdAt,
+          notificationMsg.link!
         );
 
         //sending push notification
