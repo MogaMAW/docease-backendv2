@@ -104,9 +104,9 @@ export const getLiveNotifications = asyncHandler(
     notification
       .listenNotificationEvent()
       .on("notification", (notificationMsg: TNotification) => {
-        const { notificationId, createdAt } = saveNotification(notificationMsg);
-
         if (notificationMsg.userId !== userId) return;
+
+        const { notificationId, createdAt } = saveNotification(notificationMsg);
         sendSSENotificationToOneClient(
           notificationMsg.userId,
           notificationMsg.message,
