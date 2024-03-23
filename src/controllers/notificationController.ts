@@ -10,25 +10,50 @@ const Notification = prisma.notification;
 const Device = prisma.device;
 const User = prisma.user;
 
-const saveNotification = async (notificationMsg: TNotification) => {
-  await Notification.create({
-    data: {
-      userId: notificationMsg.userId,
-      message: notificationMsg.message,
-    },
-  });
+// Saves notification in db and returns its id and createdAt
+const saveNotification = (notificationMsg: TNotification) => {
+  let notificationId: string = "";
+  let createdAt: Date = new Date();
+
+  const saveNotificationInDb = async () => {
+    const notification = await Notification.create({
+      data: {
+        userId: notificationMsg.userId,
+        message: notificationMsg.message,
+        link: notificationMsg.link,
+      },
+      select: { notificationId: true, createdAt: true },
+    });
+
+    notificationId = notification.notificationId;
+    createdAt = notification.createdAt;
+  };
+  saveNotificationInDb();
+
+  return { notificationId: notificationId, createdAt: createdAt };
 };
 
 const clientResponseMap = new Map<string, Response>();
 
 const sendSSENotificationToOneClient = async (
   userId: string,
-  message: string
+  message: string,
+  notificationId: string,
+  createdAt: Date,
+  link: string
 ) => {
   const res = clientResponseMap.get(userId);
   if (!res) return;
 
-  res.write(`data: ${JSON.stringify({ message, userId })}\n\n`);
+  res.write(
+    `data: ${JSON.stringify({
+      notificationId,
+      createdAt,
+      link,
+      message,
+      userId,
+    })}\n\n`
+  );
 };
 
 const sendPushNotification = async (notificationMsg: TNotification) => {
@@ -77,12 +102,15 @@ export const getLiveNotifications = asyncHandler(
     notification
       .listenNotificationEvent()
       .on("notification", (notificationMsg: TNotification) => {
-        saveNotification(notificationMsg);
+        const { notificationId, createdAt } = saveNotification(notificationMsg);
 
         if (notificationMsg.userId !== userId) return;
         sendSSENotificationToOneClient(
           notificationMsg.userId,
-          notificationMsg.message
+          notificationMsg.message,
+          notificationId,
+          createdAt,
+          notificationMsg.link!
         );
 
         //sending push notification
@@ -179,6 +207,54 @@ export const getLiveConferenceNotifications = asyncHandler(
 
     req.on("close", () => {
       clientResponseMap.delete(userId);
+    });
+  }
+);
+
+export const getNotificationsByUser = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.query.userId as string;
+
+    if (!userId) return next(new AppError("Please provide userId", 400));
+
+    const notifications = await Notification.findMany({
+      where: { userId: { equals: userId } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Notifications fetched successfully",
+      data: { notifications: notifications },
+    });
+  }
+);
+
+export const markNotificationAsRead = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const notificationId = req.params.notificationId as string;
+
+    if (!notificationId)
+      return next(new AppError("Please provide notificationId", 400));
+
+    const updatedNotification = await Notification.update({
+      where: { notificationId: notificationId },
+      data: { isRead: true },
+      select: {
+        notificationId: true,
+        userId: true,
+        message: true,
+        link: true,
+        isRead: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Notification marked as read",
+      data: { notification: updatedNotification },
     });
   }
 );

@@ -5,10 +5,10 @@ import { PrismaClient } from "@prisma/client";
 import { Socket } from "socket.io";
 import { notification } from "../utils/notification";
 import { TChatExtended, TChatMessage, TChatRecipient } from "../types/chat";
+import { TPushNotificationTitleEnum } from "../types/notification";
 
 const prisma = new PrismaClient();
 const Chat = prisma.chat;
-const User = prisma.user;
 
 export const postChat = asyncHandler(async (req, res, next) => {
   const chatMessage = await Chat.create({
@@ -27,6 +27,17 @@ export const postChat = asyncHandler(async (req, res, next) => {
   });
 
   notification.emitChatEvent(chatMessage);
+
+  // Emit notification event
+  notification.emitNotificationEvent({
+    userId: chatMessage.recipientId,
+    message: "You have a new message",
+    title: TPushNotificationTitleEnum.MESSAGE,
+    body: "You have a new message",
+    link: `/messages?id=${chatMessage.messageId}`,
+  });
+
+  // await createDoctorsPatient(doctorId, patientId);
 
   res.status(200).json({
     status: "success",

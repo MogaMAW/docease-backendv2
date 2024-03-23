@@ -4,6 +4,7 @@ export type TNotification = {
   deviceToken?: string;
   title?: TPushNotificationTitleEnum;
   body?: string;
+  link?: string;
 };
 
 export enum TPushNotificationTitleEnum {
