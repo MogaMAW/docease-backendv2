@@ -210,3 +210,51 @@ export const getLiveConferenceNotifications = asyncHandler(
     });
   }
 );
+
+export const getNotificationsByUser = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.query.userId as string;
+
+    if (!userId) return next(new AppError("Please provide userId", 400));
+
+    const notifications = await Notification.findMany({
+      where: { userId: { equals: userId } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Notifications fetched successfully",
+      data: { notifications: notifications },
+    });
+  }
+);
+
+export const markNotificationAsRead = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const notificationId = req.params.notificationId as string;
+
+    if (!notificationId)
+      return next(new AppError("Please provide notificationId", 400));
+
+    const updatedNotification = await Notification.update({
+      where: { notificationId: notificationId },
+      data: { isRead: true },
+      select: {
+        notificationId: true,
+        userId: true,
+        message: true,
+        link: true,
+        isRead: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Notification marked as read",
+      data: { notification: updatedNotification },
+    });
+  }
+);
