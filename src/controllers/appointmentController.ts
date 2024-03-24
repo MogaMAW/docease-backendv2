@@ -9,6 +9,7 @@ import {
 import { notification } from "../utils/notification";
 import { TPushNotificationTitleEnum } from "../types/notification";
 import { createDoctorsPatient } from "./doctorsPatientController";
+import { AppointmentMessage } from "../utils/appointmentMessage";
 
 const prisma = new PrismaClient();
 const Appointment = prisma.appointment;
@@ -68,7 +69,7 @@ export const postAppointment = asyncHandler(
     const endsAt = req.body.patientId as string;
 
     if (!patientId || !doctorId || !subject || !startsAt || !endsAt) {
-      return next(new AppError("Please all mandatory fields", 400));
+      return next(new AppError("Please fill all  mandatory fields", 400));
     }
 
     const newAppointment = await Appointment.create({
@@ -85,6 +86,12 @@ export const postAppointment = asyncHandler(
         patientsComment: true,
         createdAt: true,
         updatedAt: true,
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
 
@@ -103,10 +110,17 @@ export const postAppointment = asyncHandler(
 
     newAppointment.statuses.push(appointmentStatus);
 
+    const patientName = `Pt.${newAppointment.patient.firstName} ${newAppointment.patient.lastName}`;
+    const message = new AppointmentMessage(
+      patientName,
+      newAppointment.startsAt,
+      newAppointment.endsAt
+    ).appointmentScheduled();
+
     // Emit notification event
     notification.emitNotificationEvent({
       userId: doctorId,
-      message: "New appointment from patient",
+      message: message,
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "New appointment from patient",
       link: `/appointments?id=${newAppointment.appointmentId}`,
@@ -169,6 +183,12 @@ export const updateAppointment = asyncHandler(
         patientsComment: true,
         createdAt: true,
         updatedAt: true,
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
 
@@ -187,10 +207,18 @@ export const updateAppointment = asyncHandler(
     });
 
     updatedAppointment.statuses.push(appointmentStatus);
+
+    const patientName = `Pt.${updatedAppointment.patient.firstName} ${updatedAppointment.patient.lastName}`;
+    const message = new AppointmentMessage(
+      patientName,
+      updatedAppointment.startsAt,
+      updatedAppointment.endsAt
+    ).appointmentEdited();
+
     // Emit notification event
     notification.emitNotificationEvent({
       userId: doctorId,
-      message: "Patient has edited appointment schedule",
+      message: message,
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "Patient has edited appointment schedule",
       link: `/appointments?id=${updatedAppointment.appointmentId}`,
@@ -370,7 +398,15 @@ export const deleteAppointment = asyncHandler(
 
     const appointment = await Appointment.findFirst({
       where: { appointmentId: { equals: appointmentId } },
-      include: { statuses: true },
+      include: {
+        statuses: true,
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
 
     if (!appointment) {
@@ -391,6 +427,22 @@ export const deleteAppointment = asyncHandler(
 
     await Appointment.delete({
       where: { appointmentId: appointmentId },
+    });
+
+    const patientName = `Pt.${appointment.patient.firstName} ${appointment.patient.lastName}`;
+    const message = new AppointmentMessage(
+      patientName,
+      appointment.startsAt,
+      appointment.endsAt
+    ).appointmentDeleted();
+
+    // Emit notification event
+    notification.emitNotificationEvent({
+      userId: appointment.doctorId,
+      message: message,
+      title: TPushNotificationTitleEnum.APPOINTMENT,
+      body: "Doctor has rescheduled your appointment",
+      link: `/appointments?id=${appointment.appointmentId}`,
     });
 
     res.status(200).json({
@@ -445,6 +497,12 @@ export const rescheduleAppointment = asyncHandler(
         patientsComment: true,
         createdAt: true,
         updatedAt: true,
+        doctor: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
 
@@ -480,10 +538,18 @@ export const rescheduleAppointment = asyncHandler(
     }
 
     updatedAppointment.statuses.push(appointmentStatus);
+
+    const doctorName = `Dr.${updatedAppointment.doctor.firstName} ${updatedAppointment.doctor.lastName}`;
+    const message = new AppointmentMessage(
+      doctorName,
+      updatedAppointment.startsAt,
+      updatedAppointment.endsAt
+    ).appointmentRescheduled();
+
     // Emit notification event
     notification.emitNotificationEvent({
       userId: patientId,
-      message: "Doctor has rescheduled your appointment",
+      message: message,
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "Doctor has rescheduled your appointment",
       link: `/appointments?id=${updatedAppointment.appointmentId}`,
@@ -503,7 +569,15 @@ export const approveAppointment = asyncHandler(
 
     const appointment = await Appointment.findFirst({
       where: { appointmentId: { equals: appointmentId } },
-      include: { statuses: true },
+      include: {
+        statuses: true,
+        doctor: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
 
     if (!appointment) {
@@ -535,10 +609,17 @@ export const approveAppointment = asyncHandler(
       data: { appointmentId: appointmentId, status: "approved" },
     });
 
+    const doctorName = `Dr.${appointment.doctor.firstName} ${appointment.doctor.lastName}`;
+    const message = new AppointmentMessage(
+      doctorName,
+      appointment.startsAt,
+      appointment.endsAt
+    ).appointmentApproved();
+
     // Emit notification event
     notification.emitNotificationEvent({
       userId: appointment.patientId,
-      message: "Doctor has approved your appointment",
+      message: message,
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "Doctor has approved your appointment",
       link: `/appointments?id=${appointment.appointmentId}`,
@@ -558,7 +639,15 @@ export const cancelAppointment = asyncHandler(
 
     const appointment = await Appointment.findFirst({
       where: { appointmentId: { equals: appointmentId } },
-      include: { statuses: true },
+      include: {
+        statuses: true,
+        doctor: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
     });
 
     if (!appointment) {
@@ -603,10 +692,17 @@ export const cancelAppointment = asyncHandler(
       });
     }
 
+    const doctorName = `Dr.${appointment.doctor.firstName} ${appointment.doctor.lastName}`;
+    const message = new AppointmentMessage(
+      doctorName,
+      appointment.startsAt,
+      appointment.endsAt
+    ).appointmentCancelled();
+
     // Emit notification event
     notification.emitNotificationEvent({
       userId: appointment.patientId,
-      message: "Doctor has cancelled your appointment",
+      message: message,
       title: TPushNotificationTitleEnum.APPOINTMENT,
       body: "Doctor has cancelled your appointment",
       link: `/appointments?id=${appointment.appointmentId}`,

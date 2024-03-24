@@ -23,17 +23,43 @@ export const postChat = asyncHandler(async (req, res, next) => {
       isRead: true,
       createdAt: true,
       updatedAt: true,
+      sender: {
+        select: {
+          firstName: true,
+          lastName: true,
+          role: true,
+        },
+      },
     },
   });
 
-  notification.emitChatEvent(chatMessage);
+  const title = chatMessage.sender.role === "doctor" ? "Dr." : "Pt.";
+  const recipientName = `${title}${chatMessage.sender.firstName} ${chatMessage.sender.lastName}`;
+  const message = `New Chat Message: You have received a new message
+                   from ${recipientName}. Please check your inbox to
+                   respond promptly. Thank you.`;
+  // const message = `New Chat Message: You have received a new message
+  //                  from ${recipientName}.`;
+
+  // notification.emitChatEvent(chatMessage);
+  notification.emitChatEvent({
+    messageId: chatMessage.messageId,
+    senderId: chatMessage.senderId,
+    recipientId: chatMessage.recipientId,
+    chatRoomId: chatMessage.chatRoomId,
+    message: chatMessage.message,
+    isDelivered: chatMessage.isDelivered,
+    isRead: chatMessage.isRead,
+    createdAt: chatMessage.createdAt,
+    updatedAt: chatMessage.updatedAt,
+  });
 
   // Emit notification event
   notification.emitNotificationEvent({
     userId: chatMessage.recipientId,
-    message: "You have a new message",
+    message: message,
     title: TPushNotificationTitleEnum.MESSAGE,
-    body: "You have a new message",
+    body: message,
     link: `/messages?id=${chatMessage.messageId}`,
   });
 
