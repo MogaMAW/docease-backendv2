@@ -68,7 +68,7 @@ export const postAppointment = asyncHandler(
     const endsAt = req.body.patientId as string;
 
     if (!patientId || !doctorId || !subject || !startsAt || !endsAt) {
-      return next(new AppError("Please all mandatory fields", 400));
+      return next(new AppError("Please fill all  mandatory fields", 400));
     }
 
     const newAppointment = await Appointment.create({
